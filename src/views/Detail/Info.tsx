@@ -8,6 +8,7 @@ import DescriptionComponent from "../../components/Description";
 
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { QuestionDetail } from "../../model/question-detail";
+import SubmitComponent from "../../components/Submit";
 
 const DEFAULT_QUESTION: QuestionDetail = {
   tid: 1,
@@ -61,6 +62,7 @@ const DetailInfo = () => {
         </Tabs>
         <div className={classes.bodyContainer}>
           {tabIndex === 0 && <DescriptionComponent question={question} />}
+          {tabIndex === 1 && <SubmitComponent question={question} />}
         </div>
       </Paper>
     </>
