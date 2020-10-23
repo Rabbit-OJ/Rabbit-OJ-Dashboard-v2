@@ -1,13 +1,14 @@
 import React from "react";
-import {
-  createMuiTheme,
-  ThemeProvider,
-} from "@material-ui/core/styles";
+import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 
 import Bar from "./components/Bar";
 
-import { blue, orange } from "@material-ui/core/colors";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+
+import blue from "@material-ui/core/colors/blue";
+import orange from "@material-ui/core/colors/orange";
 import "./App.css";
+import User from "./components/User";
 
 const theme = createMuiTheme({
   palette: {
@@ -22,9 +23,16 @@ const theme = createMuiTheme({
 
 const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <Bar />
-    </ThemeProvider>
+    <Router>
+      <ThemeProvider theme={theme}>
+        <Bar />
+        <div className="main-container">
+        <Switch>
+          <Route path="/user" component={User} />
+        </Switch>
+        </div>
+      </ThemeProvider>
+    </Router>
   );
 };
 
