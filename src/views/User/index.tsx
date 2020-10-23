@@ -2,7 +2,7 @@ import React from "react";
 
 import UserLogin from "./Login";
 import UserRegister from "./Register";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import { createStyles, makeStyles } from "@material-ui/core/styles";
 
 import { Route, Switch, Redirect } from "react-router-dom";
 import Paper from "@material-ui/core/Paper";

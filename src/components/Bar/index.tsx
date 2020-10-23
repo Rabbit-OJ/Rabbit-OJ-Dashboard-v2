@@ -11,9 +11,18 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
-import MenuIcon from "@material-ui/icons/Menu";
 import Drawer from "@material-ui/core/Drawer";
+
+import MenuIcon from "@material-ui/icons/Menu";
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import PersonIcon from '@material-ui/icons/Person';
+import ListIcon from '@material-ui/icons/List';
+import ForumIcon from '@material-ui/icons/Forum';
+import EmojiEventsIcon from '@material-ui/icons/EmojiEvents';
+
 import makeStyles from "@material-ui/core/styles/makeStyles";
+
+import { useHistory } from "react-router";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -49,6 +58,8 @@ const Bar = () => {
     setNavigationOpenState(open);
   };
   const NavigationList = () => {
+    const history = useHistory();
+
     return (
       <div
         className={classes.list}
@@ -57,36 +68,36 @@ const Bar = () => {
         onKeyDown={toggleDrawer(false)}
       >
         <List>
-          <ListItem button>
+          <ListItem button onClick={() => history.push("/list/1")}>
             <ListItemIcon>
-              <InboxIcon />
+              <ListIcon />
             </ListItemIcon>
             <ListItemText primary="Problems" />
           </ListItem>
-          <ListItem button>
+          <ListItem button onClick={() => history.push("/contest/list/1")}>
             <ListItemIcon>
-              <InboxIcon />
+              <EmojiEventsIcon />
             </ListItemIcon>
             <ListItemText primary="Contest" />
           </ListItem>
           <ListItem button>
             <ListItemIcon>
-              <InboxIcon />
+              <ForumIcon />
             </ListItemIcon>
             <ListItemText primary="Community" />
           </ListItem>
         </List>
         <Divider />
         <List>
-          <ListItem button>
+          <ListItem button onClick={() => history.push("/user/login")}>
             <ListItemIcon>
-              <InboxIcon />
+              <PersonIcon />
             </ListItemIcon>
             <ListItemText primary="Login" />
           </ListItem>
-          <ListItem button>
+          <ListItem button onClick={() => history.push("/user/register")}>
             <ListItemIcon>
-              <InboxIcon />
+              <PersonAddIcon />
             </ListItemIcon>
             <ListItemText primary="Register" />
           </ListItem>

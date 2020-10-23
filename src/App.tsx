@@ -8,7 +8,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import blue from "@material-ui/core/colors/blue";
 import orange from "@material-ui/core/colors/orange";
 import "./App.css";
-import User from "./components/User";
+import User from "./views/User";
 
 const theme = createMuiTheme({
   palette: {
