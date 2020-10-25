@@ -35,7 +35,7 @@ const useStyles = makeStyles(() =>
   })
 );
 
-const DetailInfo = () => {
+const DetailProblem = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [question, setQuestion] = useState(DEFAULT_QUESTION);
   const classes = useStyles();
@@ -72,4 +72,4 @@ const DetailInfo = () => {
   );
 };
 
-export default DetailInfo;
+export default DetailProblem;

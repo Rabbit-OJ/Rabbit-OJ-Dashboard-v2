@@ -1,13 +1,15 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
 
-import DetailInfo from "./Info";
+import DetailProblem from "./Problem";
+import DetailSubmission from "./Submission";
 
 
 const DetailIndex = () => {
   return (
     <Switch>
-      <Route path="/detail/problem/:tid" component={DetailInfo} />
+      <Route path="/detail/problem/:tid" component={DetailProblem} />
+      <Route path="/detail/submission/:sid" component={DetailSubmission} />
     </Switch>
   );
 };

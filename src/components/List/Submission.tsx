@@ -19,11 +19,6 @@ interface ISubmissionComponentProps {
 
 const useStyles = makeStyles(() =>
   createStyles({
-    questionTitle: {
-      cursor: "pointer",
-      textDecoration: "none",
-      color: "black",
-    },
     infoContainer: {
       color: "gray",
       fontSize: "12px",
@@ -61,7 +56,7 @@ const SubmissionComponent = ({ item }: ISubmissionComponentProps) => {
   return (
     <div>
       <div>
-        <Link to={url} className={classes.questionTitle}>
+        <Link to={url} className="router-link">
           {item.question_title}
         </Link>
       </div>

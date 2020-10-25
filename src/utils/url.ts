@@ -47,6 +47,8 @@ const CONTEST = {
   SOCKET: (cid: string, uid: string) => `${BACKEND_SOCKET_URL}/contest/ws/${cid}/${uid}`
 };
 
-export default {
+const API_URL = {
   QUESTION, USER, SUBMISSION, CONTEST
 };
+
+export default API_URL;

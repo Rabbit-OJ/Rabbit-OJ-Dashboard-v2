@@ -17,11 +17,6 @@ interface IContestComponentProps {
 
 const useStyles = makeStyles(() =>
   createStyles({
-    questionTitle: {
-      cursor: "pointer",
-      textDecoration: "none",
-      color: "black",
-    },
     infoContainer: {
       color: "gray",
       fontSize: "12px",
@@ -38,7 +33,7 @@ const renderStatus = (status: 0 | 1 | 2 | 3) => {
   } else {
     return "已结束";
   }
-}
+};
 
 const ContestComponent = ({ item }: IContestComponentProps) => {
   const classes = useStyles();
@@ -47,17 +42,14 @@ const ContestComponent = ({ item }: IContestComponentProps) => {
   return (
     <div>
       <div>
-        <Link to={url} className={classes.questionTitle}>
+        <Link to={url} className="router-link">
           {item.name}
         </Link>
       </div>
-      <div className={classes.infoContainer}>
-      { renderStatus(item.status) }
-      </div>
+      <div className={classes.infoContainer}>{renderStatus(item.status)}</div>
     </div>
   );
 };
-
 
 const ContestListComponent = ({ list }: IContestListComponentProps) => {
   const [pageCount, setPageCount] = useState(10);

@@ -17,11 +17,6 @@ interface IProblemComponentProps {
 
 const useStyles = makeStyles(() =>
   createStyles({
-    questionTitle: {
-      cursor: "pointer",
-      textDecoration: "none",
-      color: "black",
-    },
     infoContainer: {
       color: "gray",
       fontSize: "12px",
@@ -37,7 +32,7 @@ const ProblemComponent = ({ item }: IProblemComponentProps) => {
   return (
     <div>
       <div>
-        <Link to={url} className={classes.questionTitle}>
+        <Link to={url} className="router-link">
           {item.subject}
         </Link>
       </div>
@@ -48,7 +43,6 @@ const ProblemComponent = ({ item }: IProblemComponentProps) => {
     </div>
   );
 };
-
 
 const ProblemListComponent = ({ list }: IProblemListComponentProps) => {
   const [pageCount, setPageCount] = useState(10);

@@ -2,7 +2,15 @@
   margin: 86px 12px 0;
 }
 .pagination {
-  margin: 36px 0 ;
+  margin: 36px 0;
   display: flex;
   justify-content: center;
+}
+.router-link {
+  cursor: pointer;
+  text-decoration: none;
+  color: dodgerblue;
+}
+.router-link:hover {
+  color: rgb(83, 169, 255);
 }
