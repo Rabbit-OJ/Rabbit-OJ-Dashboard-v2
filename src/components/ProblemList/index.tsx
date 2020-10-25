@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 
-import { Link } from "react-router-dom";
+import { Link, useHistory, useParams } from "react-router-dom";
+
+import { createStyles, makeStyles } from "@material-ui/core/styles";
+import Pagination from "@material-ui/lab/Pagination";
 
 import { QuestionItem } from "../../model/question-list";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
 
 interface IProblemListComponentProps {
   list: Array<QuestionItem>;
@@ -47,12 +49,32 @@ const ProblemComponent = ({ item }: IProblemComponentProps) => {
   );
 };
 
+
 const ProblemListComponent = ({ list }: IProblemListComponentProps) => {
+  const [pageCount, setPageCount] = useState(10);
+  const { page } = useParams<{ page: string }>();
+  const history = useHistory();
+
+  const handlePaginationChange = (
+    _: React.ChangeEvent<unknown>,
+    newPage: number
+  ) => {
+    history.push(`/list/problem/${newPage}`);
+  };
+
   return (
     <>
       {list.map((item) => (
         <ProblemComponent key={item.tid} item={item} />
       ))}
+      <Pagination
+        className="pagination"
+        count={pageCount}
+        page={+page}
+        variant="outlined"
+        color="primary"
+        onChange={handlePaginationChange}
+      />
     </>
   );
 };
