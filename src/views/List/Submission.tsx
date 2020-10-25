@@ -1,5 +1,5 @@
 import React from "react";
-import SubmissionListComponent from "../../components/SubmissionList";
+import SubmissionListComponent from "../../components/List/Submission";
 import { SubmissionLite } from "../../model/submission";
 
 const LIST_DEMO_DATA: SubmissionLite[] = [

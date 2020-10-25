@@ -1,5 +1,5 @@
 import React from "react";
-import ProblemListComponent from "../../components/ProblemList";
+import ProblemListComponent from "../../components/List/Problem";
 import { QuestionItem } from "../../model/question-list";
 
 const LIST_DEMO_DATA: QuestionItem[] = [

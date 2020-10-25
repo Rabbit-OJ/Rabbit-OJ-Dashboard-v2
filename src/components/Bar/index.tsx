@@ -74,7 +74,7 @@ const Bar = () => {
             </ListItemIcon>
             <ListItemText primary="Problems" />
           </ListItem>
-          <ListItem button onClick={() => history.push("/contest/list/1")}>
+          <ListItem button onClick={() => history.push("/list/contest/1")}>
             <ListItemIcon>
               <EmojiEventsIcon />
             </ListItemIcon>
