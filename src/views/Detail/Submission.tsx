@@ -12,6 +12,7 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 
 import { Submission } from "../../model/submission";
 import API_URL from "../../utils/url";
+import SubmissionDotComponent from "../../components/Dot";
 
 const DEFAULT_SUBMISSION: Submission = {
   sid: 0,
@@ -23,7 +24,18 @@ const DEFAULT_SUBMISSION: Submission = {
   time_used: 0,
   space_used: 0,
   created_at: new Date(),
-  judge: [],
+  judge: [
+    {
+      status: "AC",
+      time_used: 1,
+      space_used: 1,
+    },
+    {
+      status: "AC",
+      time_used: 1,
+      space_used: 1,
+    },
+  ],
 };
 
 const useStyles = makeStyles(() =>
@@ -55,6 +67,10 @@ const useDetailSubmissionStyles = makeStyles(() =>
     statusSubmissionNo: {
       color: "red",
     },
+    caseDotListContainer: {
+      display: "flex",
+      flexFlow: "row wrap",
+    },
   })
 );
 
@@ -83,13 +99,19 @@ const SubmissionDetailComponent = ({
         </Link>
       </p>
       <p>
-        Status: <span className={clsx(...statusClassName)}>{submission.status}</span>
+        Status:{" "}
+        <span className={clsx(...statusClassName)}>{submission.status}</span>
       </p>
       <p>Language: {submission.language}</p>
       <p>Space Used: {submission.space_used}</p>
       <p>Time Used: {submission.time_used}ms</p>
       <p>Submit Time: {submission.created_at.toLocaleString()}</p>
       <h3>Test Cases Info</h3>
+      <div className={classes.caseDotListContainer}>
+        {submission.judge.map((item, idx) => (
+          <SubmissionDotComponent key={idx} dot={item} index={idx} />
+        ))}
+      </div>
     </>
   );
 };
