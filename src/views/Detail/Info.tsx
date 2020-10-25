@@ -47,7 +47,7 @@ const DetailInfo = () => {
   return (
     <>
       <h1>
-        {question.hide && <span>🔒</span>}
+        {question.hide && <span role="img" aria-label="Locked">🔒</span>}
         {question.subject}
       </h1>
       <Paper className={classes.main}>
