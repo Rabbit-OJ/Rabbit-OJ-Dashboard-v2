@@ -13,11 +13,11 @@ import IconButton from "@material-ui/core/IconButton";
 import Drawer from "@material-ui/core/Drawer";
 
 import MenuIcon from "@material-ui/icons/Menu";
-import PersonAddIcon from '@material-ui/icons/PersonAdd';
-import PersonIcon from '@material-ui/icons/Person';
-import ListIcon from '@material-ui/icons/List';
-import ForumIcon from '@material-ui/icons/Forum';
-import EmojiEventsIcon from '@material-ui/icons/EmojiEvents';
+import PersonAddIcon from "@material-ui/icons/PersonAdd";
+import PersonIcon from "@material-ui/icons/Person";
+import ListIcon from "@material-ui/icons/List";
+import ForumIcon from "@material-ui/icons/Forum";
+import EmojiEventsIcon from "@material-ui/icons/EmojiEvents";
 
 import makeStyles from "@material-ui/core/styles/makeStyles";
 
@@ -66,7 +66,7 @@ const Bar = () => {
         onKeyDown={toggleDrawer(false)}
       >
         <List>
-          <ListItem button onClick={() => history.push("/list/1")}>
+          <ListItem button onClick={() => history.push("/list/problem/1")}>
             <ListItemIcon>
               <ListIcon />
             </ListItemIcon>

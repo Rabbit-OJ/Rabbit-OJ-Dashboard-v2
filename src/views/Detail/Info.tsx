@@ -27,8 +27,11 @@ const DEFAULT_QUESTION: QuestionDetail = {
 const useStyles = makeStyles(() =>
   createStyles({
     bodyContainer: {
-      padding: "24px 24px",
+      padding: "24px",
     },
+    main: {
+      margin: "24px 0"
+    }
   })
 );
 
@@ -47,7 +50,7 @@ const DetailInfo = () => {
         {question.hide && <span>🔒</span>}
         {question.subject}
       </h1>
-      <Paper>
+      <Paper className={classes.main}>
         <Tabs
           value={tabIndex}
           onChange={handleChange}

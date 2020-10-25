@@ -10,6 +10,7 @@ import orange from "@material-ui/core/colors/orange";
 import "./App.css";
 import User from "./views/User";
 import DetailIndex from "./views/Detail";
+import ListIndex from "./views/List";
 
 const theme = createMuiTheme({
   palette: {
@@ -28,10 +29,11 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <Bar />
         <div className="main-container">
-        <Switch>
-          <Route path="/user" component={User} />
-          <Route path="/detail" component={DetailIndex} />
-        </Switch>
+          <Switch>
+            <Route path="/user" component={User} />
+            <Route path="/detail" component={DetailIndex} />
+            <Route path="/list" component={ListIndex} />
+          </Switch>
         </div>
       </ThemeProvider>
     </Router>
