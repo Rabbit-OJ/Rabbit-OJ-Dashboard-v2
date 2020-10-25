@@ -5,14 +5,15 @@ import { Link, useHistory, useParams } from "react-router-dom";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import Pagination from "@material-ui/lab/Pagination";
 
-import { QuestionItem } from "../../model/question-list";
+import { SubmissionLite } from "../../model/submission";
+import { displayMemory } from "../../utils/display";
 
-interface IProblemListComponentProps {
-  list: Array<QuestionItem>;
+interface ISubmissionListComponentProps {
+  list: Array<SubmissionLite>;
 }
 
-interface IProblemComponentProps {
-  item: QuestionItem;
+interface ISubmissionComponentProps {
+  item: SubmissionLite;
 }
 
 const useStyles = makeStyles(() =>
@@ -30,27 +31,26 @@ const useStyles = makeStyles(() =>
   })
 );
 
-const ProblemComponent = ({ item }: IProblemComponentProps) => {
+const SubmissionComponent = ({ item }: ISubmissionComponentProps) => {
   const classes = useStyles();
-  const url = `/detail/problem/${item.tid}`;
+  const url = `/detail/submission/${item.tid}`;
 
   return (
     <div>
       <div>
         <Link to={url} className={classes.questionTitle}>
-          {item.subject}
+          {item.question_title}
         </Link>
       </div>
       <div className={classes.infoContainer}>
-        {item.accept} / {item.attempt},{" "}
-        {((item.accept / (item.attempt || 1)) * 100.0).toFixed(2)}%
+        {item.language}, {item.time_used}ms, {displayMemory(item.space_used)},{" "}
+        {item.created_at.toLocaleString()}
       </div>
     </div>
   );
 };
 
-
-const ProblemListComponent = ({ list }: IProblemListComponentProps) => {
+const SubmissionListComponent = ({ list }: ISubmissionListComponentProps) => {
   const [pageCount, setPageCount] = useState(10);
   const { page } = useParams<{ page: string }>();
   const history = useHistory();
@@ -59,13 +59,13 @@ const ProblemListComponent = ({ list }: IProblemListComponentProps) => {
     _: React.ChangeEvent<unknown>,
     newPage: number
   ) => {
-    history.push(`/list/problem/${newPage}`);
+    history.push(`/list/submission/${newPage}`);
   };
 
   return (
     <>
       {list.map((item) => (
-        <ProblemComponent key={item.tid} item={item} />
+        <SubmissionComponent key={item.tid} item={item} />
       ))}
       <Pagination
         className="pagination"
@@ -79,4 +79,4 @@ const ProblemListComponent = ({ list }: IProblemListComponentProps) => {
   );
 };
 
-export default ProblemListComponent;
+export default SubmissionListComponent;

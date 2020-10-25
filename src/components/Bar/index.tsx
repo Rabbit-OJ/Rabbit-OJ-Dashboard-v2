@@ -18,6 +18,7 @@ import PersonIcon from "@material-ui/icons/Person";
 import ListIcon from "@material-ui/icons/List";
 import ForumIcon from "@material-ui/icons/Forum";
 import EmojiEventsIcon from "@material-ui/icons/EmojiEvents";
+import BackupIcon from '@material-ui/icons/Backup';
 
 import makeStyles from "@material-ui/core/styles/makeStyles";
 
@@ -55,6 +56,7 @@ const Bar = () => {
 
     setNavigationOpenState(open);
   };
+
   const NavigationList = () => {
     const history = useHistory();
 
@@ -92,6 +94,12 @@ const Bar = () => {
               <PersonIcon />
             </ListItemIcon>
             <ListItemText primary="Login" />
+          </ListItem>
+          <ListItem button onClick={() => history.push("/list/submission/1")}>
+            <ListItemIcon>
+              <BackupIcon />
+            </ListItemIcon>
+            <ListItemText primary="Submission" />
           </ListItem>
           <ListItem button onClick={() => history.push("/user/register")}>
             <ListItemIcon>

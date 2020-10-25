@@ -7,7 +7,7 @@ import DetailInfo from "./Info";
 const DetailIndex = () => {
   return (
     <Switch>
-      <Route path="/detail/:tid" component={DetailInfo} />
+      <Route path="/detail/problem/:tid" component={DetailInfo} />
     </Switch>
   );
 };
