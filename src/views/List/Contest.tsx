@@ -20,7 +20,7 @@ const LIST_DEMO_DATA: Contest[] = [
 const ContestListView = () => {
   return (
     <>
-      <ContestListComponent list={LIST_DEMO_DATA} />
+      <ContestListComponent list={LIST_DEMO_DATA} page={1} pageCount={10} />
     </>
   );
 };

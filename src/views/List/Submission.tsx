@@ -19,7 +19,7 @@ const LIST_DEMO_DATA: SubmissionLite[] = [
 const SubmissionListView = () => {
   return (
     <>
-      <SubmissionListComponent list={LIST_DEMO_DATA} />
+      <SubmissionListComponent list={LIST_DEMO_DATA} page={1} pageCount={10} />
     </>
   );
 };

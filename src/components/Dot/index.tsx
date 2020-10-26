@@ -55,7 +55,7 @@ const useStyles = makeStyles(() =>
       },
     },
     status: {
-      margin: "18px 0 40px 0",
+      margin: "18px 0 36px 0",
       fontSize: "18px",
       fontWeight: "bold",
       textAlign: "center",

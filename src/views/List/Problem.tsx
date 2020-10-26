@@ -19,7 +19,7 @@ const LIST_DEMO_DATA: QuestionItem[] = [
 const ProblemListView = () => {
   return (
     <>
-      <ProblemListComponent list={LIST_DEMO_DATA} />
+      <ProblemListComponent list={LIST_DEMO_DATA} page={1} pageCount={10} />
     </>
   );
 };

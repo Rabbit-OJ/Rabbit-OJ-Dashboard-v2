@@ -3,7 +3,12 @@ import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 
 import Bar from "./components/Bar";
 
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Redirect,
+  Route,
+  Switch,
+} from "react-router-dom";
 
 import blue from "@material-ui/core/colors/blue";
 import orange from "@material-ui/core/colors/orange";
@@ -30,6 +35,9 @@ const App = () => {
         <Bar />
         <div className="main-container">
           <Switch>
+            <Route exact path="/">
+              <Redirect push to="/list/problem/1" />
+            </Route>
             <Route path="/user" component={User} />
             <Route path="/detail" component={DetailIndex} />
             <Route path="/list" component={ListIndex} />

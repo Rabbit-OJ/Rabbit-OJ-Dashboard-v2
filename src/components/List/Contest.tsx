@@ -9,6 +9,9 @@ import { Contest } from "../../model/contest";
 
 interface IContestListComponentProps {
   list: Array<Contest>;
+  onPageChange?: (newPage: number) => void;
+  page: number;
+  pageCount: number;
 }
 
 interface IContestComponentProps {
@@ -51,18 +54,12 @@ const ContestComponent = ({ item }: IContestComponentProps) => {
   );
 };
 
-const ContestListComponent = ({ list }: IContestListComponentProps) => {
-  const [pageCount, setPageCount] = useState(10);
-  const { page } = useParams<{ page: string }>();
-  const history = useHistory();
-
-  const handlePaginationChange = (
-    _: React.ChangeEvent<unknown>,
-    newPage: number
-  ) => {
-    history.push(`/list/contest/${newPage}`);
-  };
-
+const ContestListComponent = ({
+  list,
+  onPageChange,
+  page,
+  pageCount,
+}: IContestListComponentProps) => {
   return (
     <>
       {list.map((item) => (
@@ -71,10 +68,12 @@ const ContestListComponent = ({ list }: IContestListComponentProps) => {
       <Pagination
         className="pagination"
         count={pageCount}
-        page={+page}
+        page={page}
         variant="outlined"
         color="primary"
-        onChange={handlePaginationChange}
+        onChange={(_, newPage) => {
+          onPageChange && onPageChange(newPage);
+        }}
       />
     </>
   );

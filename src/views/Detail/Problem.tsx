@@ -3,12 +3,13 @@ import React, { useState } from "react";
 import Paper from "@material-ui/core/Paper";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
+import { createStyles, makeStyles } from "@material-ui/core/styles";
 
 import DescriptionComponent from "../../components/Description";
-
-import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { QuestionDetail } from "../../model/question-detail";
 import SubmitComponent from "../../components/Submit";
+import { SubmissionLite } from "../../model/submission";
+import SubmissionListComponent from "../../components/List/Submission";
 
 const DEFAULT_QUESTION: QuestionDetail = {
   tid: 1,
@@ -24,14 +25,28 @@ const DEFAULT_QUESTION: QuestionDetail = {
   difficulty: 1,
 };
 
+const SUBMISSION_DEMO_DATA: SubmissionLite[] = [
+  {
+    sid: 1,
+    uid: 1,
+    tid: 1,
+    question_title: "A + B Problem",
+    status: "AC",
+    language: "C++ 17",
+    time_used: 1,
+    space_used: 1,
+    created_at: new Date(),
+  },
+];
+
 const useStyles = makeStyles(() =>
   createStyles({
     bodyContainer: {
       padding: "24px",
     },
     main: {
-      margin: "24px 0"
-    }
+      margin: "24px 0",
+    },
   })
 );
 
@@ -47,7 +62,11 @@ const DetailProblem = () => {
   return (
     <>
       <h1>
-        {question.hide && <span role="img" aria-label="Locked">🔒</span>}
+        {question.hide && (
+          <span role="img" aria-label="Locked">
+            🔒
+          </span>
+        )}
         {question.subject}
       </h1>
       <Paper className={classes.main}>
@@ -66,6 +85,13 @@ const DetailProblem = () => {
         <div className={classes.bodyContainer}>
           {tabIndex === 0 && <DescriptionComponent question={question} />}
           {tabIndex === 1 && <SubmitComponent question={question} />}
+          {tabIndex === 2 && (
+            <SubmissionListComponent
+              list={SUBMISSION_DEMO_DATA}
+              page={1}
+              pageCount={10}
+            />
+          )}
         </div>
       </Paper>
     </>

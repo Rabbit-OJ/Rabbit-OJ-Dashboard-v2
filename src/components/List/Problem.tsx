@@ -9,6 +9,9 @@ import { QuestionItem } from "../../model/question-list";
 
 interface IProblemListComponentProps {
   list: Array<QuestionItem>;
+  onPageChange?: (newPage: number) => void;
+  page: number;
+  pageCount: number;
 }
 
 interface IProblemComponentProps {
@@ -44,18 +47,12 @@ const ProblemComponent = ({ item }: IProblemComponentProps) => {
   );
 };
 
-const ProblemListComponent = ({ list }: IProblemListComponentProps) => {
-  const [pageCount, setPageCount] = useState(10);
-  const { page } = useParams<{ page: string }>();
-  const history = useHistory();
-
-  const handlePaginationChange = (
-    _: React.ChangeEvent<unknown>,
-    newPage: number
-  ) => {
-    history.push(`/list/problem/${newPage}`);
-  };
-
+const ProblemListComponent = ({
+  list,
+  onPageChange,
+  page,
+  pageCount,
+}: IProblemListComponentProps) => {
   return (
     <>
       {list.map((item) => (
@@ -64,10 +61,12 @@ const ProblemListComponent = ({ list }: IProblemListComponentProps) => {
       <Pagination
         className="pagination"
         count={pageCount}
-        page={+page}
+        page={page}
         variant="outlined"
         color="primary"
-        onChange={handlePaginationChange}
+        onChange={(_, newPage) => {
+          onPageChange && onPageChange(newPage);
+        }}
       />
     </>
   );

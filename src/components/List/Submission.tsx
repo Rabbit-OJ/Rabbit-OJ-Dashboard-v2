@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 
-import { Link, useHistory, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import Pagination from "@material-ui/lab/Pagination";
@@ -11,6 +11,9 @@ import clsx from "clsx";
 
 interface ISubmissionListComponentProps {
   list: Array<SubmissionLite>;
+  onPageChange?: (newPage: number) => void;
+  page: number;
+  pageCount: number;
 }
 
 interface ISubmissionComponentProps {
@@ -71,18 +74,12 @@ const SubmissionComponent = ({ item }: ISubmissionComponentProps) => {
   );
 };
 
-const SubmissionListComponent = ({ list }: ISubmissionListComponentProps) => {
-  const [pageCount, setPageCount] = useState(10);
-  const { page } = useParams<{ page: string }>();
-  const history = useHistory();
-
-  const handlePaginationChange = (
-    _: React.ChangeEvent<unknown>,
-    newPage: number
-  ) => {
-    history.push(`/list/submission/${newPage}`);
-  };
-
+const SubmissionListComponent = ({
+  list,
+  onPageChange,
+  page,
+  pageCount,
+}: ISubmissionListComponentProps) => {
   return (
     <>
       {list.map((item) => (
@@ -91,10 +88,12 @@ const SubmissionListComponent = ({ list }: ISubmissionListComponentProps) => {
       <Pagination
         className="pagination"
         count={pageCount}
-        page={+page}
+        page={page}
         variant="outlined"
         color="primary"
-        onChange={handlePaginationChange}
+        onChange={(_, newPage) => {
+          onPageChange && onPageChange(newPage);
+        }}
       />
     </>
   );
