@@ -1,4 +1,8 @@
 import React from "react";
+
+import Paper from "@material-ui/core/Paper";
+import { createStyles, makeStyles } from "@material-ui/core/styles";
+
 import ContestListComponent from "../../components/List/Contest";
 import { Contest } from "../../model/contest";
 
@@ -17,10 +21,24 @@ const LIST_DEMO_DATA: Contest[] = [
   },
 ];
 
+const useStyles = makeStyles(() =>
+  createStyles({
+    main: {
+      margin: "24px 0",
+      padding: "24px 12px 12px 12px",
+    },
+  })
+);
+
 const ContestListView = () => {
+  const classes = useStyles();
+
   return (
     <>
-      <ContestListComponent list={LIST_DEMO_DATA} page={1} pageCount={10} />
+      <h1>Contest</h1>
+      <Paper className={classes.main}>
+        <ContestListComponent list={LIST_DEMO_DATA} page={1} pageCount={10} />
+      </Paper>
     </>
   );
 };
