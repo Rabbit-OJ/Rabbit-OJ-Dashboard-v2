@@ -9,14 +9,14 @@ const useStyles = makeStyles(() =>
     btnContainer: {
       display: "flex",
       justifyContent: "center",
-      flexFlow: "column"
+      flexFlow: "column",
     },
     btnMargin: {
       margin: "12px",
     },
     fullWidth: {
       width: "100%",
-      margin: "24px 0"
+      margin: "24px 0",
     },
     inputTitle: {
       textAlign: "center",
@@ -31,7 +31,7 @@ const UserLogin = () => {
 
   const handleLogin = () => {};
   const handleRegister = () => {
-    history.push('/user/register');
+    history.push("/user/register");
   };
 
   return (
