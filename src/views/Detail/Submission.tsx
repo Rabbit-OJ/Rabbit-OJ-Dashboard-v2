@@ -92,20 +92,20 @@ const SubmissionDetailComponent = ({
   return (
     <>
       <h3>Basic Information</h3>
-      <p>
+      <div>
         Problem:{" "}
         <Link to={`/detail/problem/${submission.tid}`} className="router-link">
           {submission.question_title}
         </Link>
-      </p>
-      <p>
+      </div>
+      <div>
         Status:{" "}
         <span className={clsx(...statusClassName)}>{submission.status}</span>
-      </p>
-      <p>Language: {submission.language}</p>
-      <p>Space Used: {submission.space_used}</p>
-      <p>Time Used: {submission.time_used}ms</p>
-      <p>Submit Time: {submission.created_at.toLocaleString()}</p>
+      </div>
+      <div>Language: {submission.language}</div>
+      <div>Space Used: {submission.space_used}</div>
+      <div>Time Used: {submission.time_used}ms</div>
+      <div>Submit Time: {submission.created_at.toLocaleString()}</div>
       <h3>Test Cases Info</h3>
       <div className={classes.caseDotListContainer}>
         {submission.judge.map((item, idx) => (
