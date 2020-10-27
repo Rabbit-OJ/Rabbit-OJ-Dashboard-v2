@@ -1,4 +1,8 @@
 import React from "react";
+import { useHistory } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+
+import makeStyles from "@material-ui/core/styles/makeStyles";
 
 import List from "@material-ui/core/List";
 import Divider from "@material-ui/core/Divider";
@@ -11,18 +15,17 @@ import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import Drawer from "@material-ui/core/Drawer";
-
 import MenuIcon from "@material-ui/icons/Menu";
 import PersonAddIcon from "@material-ui/icons/PersonAdd";
 import PersonIcon from "@material-ui/icons/Person";
 import ListIcon from "@material-ui/icons/List";
 import ForumIcon from "@material-ui/icons/Forum";
 import EmojiEventsIcon from "@material-ui/icons/EmojiEvents";
-import BackupIcon from '@material-ui/icons/Backup';
+import BackupIcon from "@material-ui/icons/Backup";
+import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 
-import makeStyles from "@material-ui/core/styles/makeStyles";
-
-import { useHistory } from "react-router";
+import { UserStore } from "../../data";
+import { logout } from "../../data/actions";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -42,6 +45,16 @@ const useStyles = makeStyles((theme) => ({
 const Bar = () => {
   const classes = useStyles();
   const [navigationOpenState, setNavigationOpenState] = React.useState(false);
+  const history = useHistory();
+
+  const { isLogin, username } = useSelector<
+    UserStore,
+    Pick<UserStore, "isLogin" | "username">
+  >((state) => ({
+    isLogin: state.isLogin,
+    username: state.username,
+  }));
+  const dispatch = useDispatch();
 
   const toggleDrawer = (open: boolean) => (
     event: React.KeyboardEvent | React.MouseEvent
@@ -58,8 +71,6 @@ const Bar = () => {
   };
 
   const NavigationList = () => {
-    const history = useHistory();
-
     return (
       <div
         className={classes.list}
@@ -89,24 +100,50 @@ const Bar = () => {
         </List>
         <Divider />
         <List>
-          <ListItem button onClick={() => history.push("/user/login")}>
-            <ListItemIcon>
-              <PersonIcon />
-            </ListItemIcon>
-            <ListItemText primary="Login" />
-          </ListItem>
-          <ListItem button onClick={() => history.push("/list/submission/1")}>
-            <ListItemIcon>
-              <BackupIcon />
-            </ListItemIcon>
-            <ListItemText primary="Submission" />
-          </ListItem>
-          <ListItem button onClick={() => history.push("/user/register")}>
-            <ListItemIcon>
-              <PersonAddIcon />
-            </ListItemIcon>
-            <ListItemText primary="Register" />
-          </ListItem>
+          {!isLogin && (
+            <>
+              <ListItem button onClick={() => history.push("/user/login")}>
+                <ListItemIcon>
+                  <PersonIcon />
+                </ListItemIcon>
+                <ListItemText primary="Login" />
+              </ListItem>
+
+              <ListItem button onClick={() => history.push("/user/register")}>
+                <ListItemIcon>
+                  <PersonAddIcon />
+                </ListItemIcon>
+                <ListItemText primary="Register" />
+              </ListItem>
+            </>
+          )}
+          {isLogin && (
+            <>
+              <ListItem
+                button
+                onClick={() => history.push("/list/submission/1")}
+              >
+                <ListItemIcon>
+                  <BackupIcon />
+                </ListItemIcon>
+                <ListItemText primary="Submission" />
+              </ListItem>
+              <ListItem
+                button
+                onClick={() => {
+                  if (window.confirm("Sure to log out?")) {
+                    localStorage.removeItem("token");
+                    dispatch(logout());
+                  }
+                }}
+              >
+                <ListItemIcon>
+                  <ExitToAppIcon />
+                </ListItemIcon>
+                <ListItemText primary="Logout" />
+              </ListItem>
+            </>
+          )}
         </List>
       </div>
     );
@@ -134,7 +171,29 @@ const Bar = () => {
         <Typography variant="h6" className={classes.title}>
           Rabbit OJ v2
         </Typography>
-        <Button color="inherit">Login</Button>
+        {!isLogin && (
+          <Button
+            color="inherit"
+            onClick={() => {
+              history.push("/user/login");
+            }}
+          >
+            Login
+          </Button>
+        )}
+        {isLogin && (
+          <Button
+            color="inherit"
+            onClick={() => {
+              if (window.confirm("Sure to log out?")) {
+                localStorage.removeItem("token");
+                dispatch(logout());
+              }
+            }}
+          >
+            {username}
+          </Button>
+        )}
       </Toolbar>
     </AppBar>
   );
