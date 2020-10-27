@@ -7,7 +7,7 @@ export interface ContestQuestion {
   score: number;
   uid: number;
   subject: string;
-  difficulty: 0 | 1 | 2;
+  difficulty: 1 | 2 | 3;
   time_limit: number;
   space_limit: number;
   created_at: string;

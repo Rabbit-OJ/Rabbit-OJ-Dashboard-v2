@@ -11,9 +11,10 @@ import TextField from "@material-ui/core/TextField";
 
 import { QuestionDetail } from "../../model/question-detail";
 import { LanguageResponse } from "../../model/language";
+import { ContestQuestion } from "../../model/contest-question";
 
 interface IProps {
-  question: QuestionDetail;
+  question: QuestionDetail | ContestQuestion;
 }
 
 const DEFAULT_LANGUAGE: LanguageResponse = [

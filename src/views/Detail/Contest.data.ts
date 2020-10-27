@@ -1,9 +1,12 @@
 import { Contest } from "../../model/contest";
 import { ContestClarify } from "../../model/contest-clarify";
 import { ContestMyInfo } from "../../model/contest-my-info";
-import { ContestQuestion } from "../../model/contest-question";
+import {
+  ContestQuestion,
+  ContestQuestionItem,
+} from "../../model/contest-question";
 import { ScoreBoard } from "../../model/score-board";
-import { ContestSubmission } from "../../model/submission";
+import { ContestSubmission, Submission } from "../../model/submission";
 
 export const DEFAULT_CONTEST: Contest<string> = {
   name: "Loading...",
@@ -68,7 +71,7 @@ export const DEFAULT_PROBLEM: Array<ContestQuestion> = [
     score: 3,
     uid: 1,
     subject: "A + B Problem",
-    difficulty: 0,
+    difficulty: 1,
     time_limit: 1000,
     space_limit: 128,
     created_at: new Date().toString(),
@@ -124,3 +127,40 @@ export const DEFAULT_SCOREBOARD_LIST: Array<ScoreBoard> = [
     ],
   },
 ];
+
+export const INITIAL_SUNMISSION_CASE_INFO_MAP = () => {
+  const initialmap = new Map<number, Submission>();
+  initialmap.set(1, {
+    sid: 1,
+    uid: 1,
+    tid: 1,
+    question_title: "A + B Problem",
+    status: "AC",
+    language: "cpp",
+    time_used: 1,
+    space_used: 12,
+    created_at: new Date(),
+    judge: [
+      {
+        status: "AC",
+        time_used: 1,
+        space_used: 1,
+      },
+      {
+        status: "AC",
+        time_used: 1,
+        space_used: 1,
+      },
+    ],
+  });
+  return initialmap;
+};
+
+export const INITIAL_PROBLEM_MAP = () => {
+  const initialmap = new Map<number, ContestQuestionItem>();
+  initialmap.set(1, {
+    subject: "A + B Problem",
+    id: 0,
+  });
+  return initialmap;
+};

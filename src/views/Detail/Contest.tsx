@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
+import clsx from "clsx";
 
 import Paper from "@material-ui/core/Paper";
 import Tabs from "@material-ui/core/Tabs";
@@ -20,7 +21,10 @@ import TableRow from "@material-ui/core/TableRow";
 import Pagination from "@material-ui/lab/Pagination";
 
 import { displayRelativeTime } from "../../utils/display";
-import { ContestQuestionItem } from "../../model/contest-question";
+import DescriptionComponent from "../../components/Description";
+import SubmitComponent from "../../components/Submit";
+import SubmissionDotComponent from "../../components/Dot";
+
 import useDetailContestStyles from "./Contest.style";
 import {
   DEFAULT_CLARIFY_LIST,
@@ -29,8 +33,9 @@ import {
   DEFAULT_PROBLEM,
   DEFAULT_SCOREBOARD_LIST,
   DEFAULT_SUBMISSION_LIST,
+  INITIAL_PROBLEM_MAP,
+  INITIAL_SUNMISSION_CASE_INFO_MAP,
 } from "./Contest.data";
-import clsx from "clsx";
 
 const DetailContest = () => {
   const { cid } = useParams<{ cid: string }>();
@@ -43,6 +48,9 @@ const DetailContest = () => {
   const [clarifyList, setClarifyList] = useState(DEFAULT_CLARIFY_LIST);
   const [clarifyRead, setClarifyRead] = useState(0);
   const [submissionList, setSubmissionList] = useState(DEFAULT_SUBMISSION_LIST);
+  const [submissionCaseInfo, setSubmissionCaseInfo] = useState(
+    INITIAL_SUNMISSION_CASE_INFO_MAP()
+  );
   const [problemList, setProblemList] = useState(DEFAULT_PROBLEM);
   const [scoreboardBlocked, setScoreboardBlocked] = useState(false);
   const [scoreboardPageCount, setScoreboardPageCount] = useState(10);
@@ -59,14 +67,7 @@ const DetailContest = () => {
   const [infoRefreshTime, setInfoRefreshTime] = useState(new Date());
 
   const [problemMap, setProblemMap] = useState(
-    (() => {
-      const initialmap = new Map<number, ContestQuestionItem>();
-      initialmap.set(1, {
-        subject: "A + B Problem",
-        id: 0,
-      });
-      return initialmap;
-    })()
+    INITIAL_PROBLEM_MAP()
   );
 
   const classes = useDetailContestStyles();
@@ -133,7 +134,7 @@ const DetailContest = () => {
     return (
       <>
         {!scoreboardBlocked && (
-          <TableContainer component={Paper}>
+          <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
@@ -253,7 +254,13 @@ const DetailContest = () => {
                 )}
             </Typography>
           </AccordionSummary>
-          <AccordionDetails></AccordionDetails>
+          <AccordionDetails>
+            <div className={classes.problemDetailContainer}>
+              <DescriptionComponent question={item} />
+              <h3>Submit</h3>
+              <SubmitComponent question={item} />
+            </div>
+          </AccordionDetails>
         </Accordion>
       ))}
       {contest.status === 1 && (
@@ -293,7 +300,21 @@ const DetailContest = () => {
                 )}
               </Typography>
             </AccordionSummary>
-            <AccordionDetails></AccordionDetails>
+            <AccordionDetails>
+              {submissionCaseInfo.has(item.sid) && (
+                <div className={classes.caseDotListContainer}>
+                  {submissionCaseInfo
+                    .get(item.sid)!
+                    .judge.map((caseItem, caseIdx) => (
+                      <SubmissionDotComponent
+                        key={caseIdx}
+                        dot={caseItem}
+                        index={caseIdx}
+                      />
+                    ))}
+                </div>
+              )}
+            </AccordionDetails>
           </Accordion>
         ))}
         {contest.status === 1 && (

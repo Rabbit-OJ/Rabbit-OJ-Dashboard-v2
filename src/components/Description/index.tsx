@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { QuestionDetail } from "../../model/question-detail";
+import { ContestQuestion } from "../../model/contest-question";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -24,7 +25,7 @@ const useStyles = makeStyles(() =>
 );
 
 interface IProps {
-  question: QuestionDetail;
+  question: QuestionDetail | ContestQuestion;
 }
 
 const DescriptionComponent = ({ question }: IProps) => {

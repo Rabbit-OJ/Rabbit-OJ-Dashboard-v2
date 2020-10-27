@@ -78,6 +78,16 @@ const useDetailContestStyles = makeStyles(() =>
         margin: "0 12px 0 0",
       },
     },
+    problemDetailContainer: {
+      display: "flex",
+      flexGrow: 1,
+      flexShrink: 1,
+      flexFlow: 'column',
+    },
+    caseDotListContainer: {
+      display: "flex",
+      flexFlow: "row wrap",
+    }
   })
 );
 
