@@ -15,7 +15,7 @@ import Bar from "./components/Bar";
 import User from "./views/User";
 import DetailIndex from "./views/Detail";
 import ListIndex from "./views/List";
-import { userStore } from "./data";
+import { store } from "./data";
 
 import "./App.css";
 
@@ -33,7 +33,7 @@ const theme = createMuiTheme({
 const App = () => {
   return (
     <Router>
-      <Provider store={userStore}>
+      <Provider store={store}>
         <ThemeProvider theme={theme}>
           <Bar />
           <div className="main-container">

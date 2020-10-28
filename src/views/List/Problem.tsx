@@ -5,6 +5,7 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 
 import ProblemListComponent from "../../components/List/Problem";
 import { QuestionItem } from "../../model/question-list";
+import RabbitFetch from "../../utils/fetch";
 
 const LIST_DEMO_DATA: QuestionItem[] = [
   {

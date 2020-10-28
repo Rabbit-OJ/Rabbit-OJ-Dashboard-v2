@@ -3,7 +3,6 @@ import { useHistory } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 
 import makeStyles from "@material-ui/core/styles/makeStyles";
-
 import List from "@material-ui/core/List";
 import Divider from "@material-ui/core/Divider";
 import ListItem from "@material-ui/core/ListItem";
@@ -15,6 +14,8 @@ import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import Drawer from "@material-ui/core/Drawer";
+import LinearProgress from "@material-ui/core/LinearProgress";
+
 import MenuIcon from "@material-ui/icons/Menu";
 import PersonAddIcon from "@material-ui/icons/PersonAdd";
 import PersonIcon from "@material-ui/icons/Person";
@@ -24,8 +25,9 @@ import EmojiEventsIcon from "@material-ui/icons/EmojiEvents";
 import BackupIcon from "@material-ui/icons/Backup";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 
-import { UserStore } from "../../data";
+import { UserStore } from "../../data/user";
 import { logout } from "../../data/actions";
+import { IStoreType } from "../../data";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -48,12 +50,14 @@ const Bar = () => {
   const history = useHistory();
 
   const { isLogin, username } = useSelector<
-    UserStore,
+    IStoreType,
     Pick<UserStore, "isLogin" | "username">
-  >((state) => ({
-    isLogin: state.isLogin,
-    username: state.username,
-  }));
+  >((state) => {
+    return {
+      isLogin: state.user.isLogin,
+      username: state.user.username,
+    };
+  });
   const dispatch = useDispatch();
 
   const toggleDrawer = (open: boolean) => (
@@ -195,6 +199,7 @@ const Bar = () => {
           </Button>
         )}
       </Toolbar>
+      <LinearProgress />
     </AppBar>
   );
 };
