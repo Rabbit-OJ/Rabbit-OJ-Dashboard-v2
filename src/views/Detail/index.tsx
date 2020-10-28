@@ -1,10 +1,9 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
-import DetailContest from "./Contest";
 
+import DetailContest from "./Contest";
 import DetailProblem from "./Problem";
 import DetailSubmission from "./Submission";
-
 
 const DetailIndex = () => {
   return (

@@ -1,15 +1,42 @@
 import { loadingDec, loadingInc } from "../data/actions";
 
-const RabbitFetch = async (
+export interface RabbitFetchParams {
+  dispatcher?: (action: any) => void;
+  method: "GET" | "POST" | "PUT" | "DELETE";
+  body?: Object | string;
+}
+
+const RabbitFetch = async <T>(
   input: RequestInfo,
-  init?: RequestInit & { dispatcher?: (action: any) => {} }
-): Promise<Response> => {
+  init?: RabbitFetchParams
+): Promise<T> => {
   const dispatcher = init?.dispatcher;
 
   try {
     dispatcher && dispatcher(loadingInc());
-    const res = await fetch(input, init);
-    return res;
+    const requestInit: RequestInit = {
+      method: init?.method ?? "GET",
+      headers: {},
+    };
+
+    if (init?.body) {
+      const body = init?.body;
+      if (typeof body === "string") {
+        requestInit.body = body;
+      } else {
+        requestInit.body = JSON.stringify(body);
+      }
+    }
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      requestInit.headers = {
+        token,
+      };
+    }
+
+    const res = await fetch(input, requestInit);
+    return (await res.json()) as T;
   } catch (err) {
     throw err;
   } finally {

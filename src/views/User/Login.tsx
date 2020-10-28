@@ -1,8 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
+import { useHistory } from "react-router";
+
 import TextField from "@material-ui/core/TextField";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
-import { useHistory } from "react-router";
+
+import RabbitFetch from "../../utils/fetch";
+import passwordMD5 from "../../utils/password";
+import API_URL from "../../utils/url";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -29,7 +34,18 @@ const UserLogin = () => {
   const classes = useStyles();
   const history = useHistory();
 
-  const handleLogin = () => {};
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    await RabbitFetch(API_URL.USER.POST_LOGIN, {
+      method: "POST",
+      body: {
+        username: username,
+        password: passwordMD5(password),
+      },
+    });
+  };
   const handleRegister = () => {
     history.push("/user/register");
   };

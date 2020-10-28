@@ -24,7 +24,6 @@ import { displayRelativeTime } from "../../utils/display";
 import DescriptionComponent from "../../components/Description";
 import SubmitComponent from "../../components/Submit";
 import SubmissionDotComponent from "../../components/Dot";
-
 import useDetailContestStyles from "./Contest.style";
 import {
   DEFAULT_CLARIFY_LIST,
