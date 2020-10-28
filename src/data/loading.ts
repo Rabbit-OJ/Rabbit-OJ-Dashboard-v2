@@ -1,5 +1,3 @@
-import { createStore } from "redux";
-
 import * as actions from "./actions";
 import { ILoading } from "../model/loading";
 

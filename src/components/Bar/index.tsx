@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useHistory } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
+import { OptionsObject, SnackbarMessage, useSnackbar } from "notistack";
 
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import List from "@material-ui/core/List";
@@ -26,8 +27,10 @@ import BackupIcon from "@material-ui/icons/Backup";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 
 import { UserStore } from "../../data/user";
-import { logout } from "../../data/actions";
+import { loadingDec, loadingInc, logout } from "../../data/actions";
 import { IStoreType } from "../../data";
+import { LoadingStore } from "../../data/loading";
+import { loadingEmitter, snackbarEmitter } from "../../data/emitter";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -49,16 +52,41 @@ const Bar = () => {
   const [navigationOpenState, setNavigationOpenState] = React.useState(false);
   const history = useHistory();
 
-  const { isLogin, username } = useSelector<
+  const { isLogin, username, loadingCount } = useSelector<
     IStoreType,
-    Pick<UserStore, "isLogin" | "username">
-  >((state) => {
-    return {
-      isLogin: state.user.isLogin,
-      username: state.user.username,
-    };
-  });
+    Pick<UserStore, "isLogin" | "username"> & Pick<LoadingStore, "loadingCount">
+  >((state) => ({
+    isLogin: state.user.isLogin,
+    username: state.user.username,
+    loadingCount: state.loading.loadingCount,
+  }));
   const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    console.log(1);
+    const loadingEvent = (arg: -1 | 1) => {
+      if (arg == -1) {
+        dispatch(loadingDec());
+      } else {
+        dispatch(loadingInc());
+      }
+    };
+    loadingEmitter.addListener("data", loadingEvent);
+
+    const snackbarEvent = (
+      message: SnackbarMessage,
+      options?: OptionsObject
+    ) => {
+      enqueueSnackbar(message, options);
+    };
+    snackbarEmitter.addListener("data", snackbarEvent);
+
+    return () => {
+      loadingEmitter.removeListener("data", loadingEvent);
+      snackbarEmitter.removeListener("data", snackbarEvent);
+    };
+  }, [dispatch, enqueueSnackbar]);
 
   const toggleDrawer = (open: boolean) => (
     event: React.KeyboardEvent | React.MouseEvent
@@ -199,7 +227,7 @@ const Bar = () => {
           </Button>
         )}
       </Toolbar>
-      <LinearProgress />
+      {loadingCount > 0 && <LinearProgress />}
     </AppBar>
   );
 };
