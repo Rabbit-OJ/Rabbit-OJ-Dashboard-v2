@@ -10,7 +10,7 @@ const ListIndex = () => {
     <Switch>
       <Route path="/list/problem/:page" component={ProblemView} />
       <Route path="/list/contest/:page" component={ContestListView} />
-      <Route path="/list/submission/:sid" component={SubmissionListView} />
+      <Route path="/list/submission/:page" component={SubmissionListView} />
     </Switch>
   );
 };

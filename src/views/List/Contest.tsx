@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import Paper from "@material-ui/core/Paper";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
 import ContestListComponent from "../../components/List/Contest";
 import { Contest } from "../../model/contest";
+import RabbitFetch from "../../utils/fetch";
+import { GeneralResponse } from "../../model/general-response";
+import { GeneralListResponse } from "../../model/question-list";
+import API_URL from "../../utils/url";
 
 const LIST_DEMO_DATA: Contest[] = [
   {
@@ -31,13 +36,29 @@ const useStyles = makeStyles(() =>
 );
 
 const ContestListView = () => {
-  const classes = useStyles();
+  const { page } = useParams<{ page: string }>();
+  const [pageCount, setPageCount] = useState(1);
+  const [list, setList] = useState(LIST_DEMO_DATA);
 
+  const fetchList = useCallback(async () => {
+    const { message } = await RabbitFetch<
+      GeneralResponse<GeneralListResponse<Contest>>
+    >(API_URL.CONTEST.GET_LIST(page));
+
+    setList(message.list);
+    setPageCount(message.count);
+  }, [page]);
+
+  useEffect(() => {
+    fetchList();
+  }, [fetchList]);
+
+  const classes = useStyles();
   return (
     <>
       <h1>Contest</h1>
       <Paper className={classes.main}>
-        <ContestListComponent list={LIST_DEMO_DATA} page={1} pageCount={10} />
+        <ContestListComponent list={list} page={+page} pageCount={pageCount} />
       </Paper>
     </>
   );

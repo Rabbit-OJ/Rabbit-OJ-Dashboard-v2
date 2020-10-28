@@ -8,6 +8,7 @@ import Button from "@material-ui/core/Button";
 import RabbitFetch from "../../utils/fetch";
 import API_URL from "../../utils/url";
 import passwordMD5 from "../../utils/password";
+import { GeneralResponse } from "../../model/general-response";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -42,14 +43,17 @@ const UserRegister = () => {
     history.push("/user/login");
   };
   const handleRegister = async () => {
-    await RabbitFetch(API_URL.USER.POST_REGISTER, {
-      method: "POST",
-      body: {
-        username: username,
-        password: passwordMD5(password),
-        email: email,
-      },
-    });
+    const response = await RabbitFetch<GeneralResponse>(
+      API_URL.USER.POST_REGISTER,
+      {
+        method: "POST",
+        body: {
+          username: username,
+          password: passwordMD5(password),
+          email: email,
+        },
+      }
+    );
   };
 
   return (

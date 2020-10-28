@@ -1,4 +1,5 @@
 import { loadingDec, loadingInc } from "../data/actions";
+import { emitSnackbar } from "../data/emitter";
 
 export interface RabbitFetchParams {
   dispatcher?: (action: any) => void;
@@ -38,6 +39,7 @@ const RabbitFetch = async <T>(
     const res = await fetch(input, requestInit);
     return (await res.json()) as T;
   } catch (err) {
+    emitSnackbar(err.toString(), { variant: "error" });
     throw err;
   } finally {
     dispatcher && dispatcher(loadingDec());

@@ -1,4 +1,4 @@
-export interface GeneralResponse<T> {
+export interface GeneralResponse<T = undefined> {
   code: number;
   message: T;
 }

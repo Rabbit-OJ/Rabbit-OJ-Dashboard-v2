@@ -8,6 +8,8 @@ import Button from "@material-ui/core/Button";
 import RabbitFetch from "../../utils/fetch";
 import passwordMD5 from "../../utils/password";
 import API_URL from "../../utils/url";
+import { GeneralResponse } from "../../model/general-response";
+import { LoginResponse } from "../../model/login-response";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -38,13 +40,16 @@ const UserLogin = () => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    await RabbitFetch(API_URL.USER.POST_LOGIN, {
-      method: "POST",
-      body: {
-        username: username,
-        password: passwordMD5(password),
-      },
-    });
+    const response = await RabbitFetch<GeneralResponse<LoginResponse>>(
+      API_URL.USER.POST_LOGIN,
+      {
+        method: "POST",
+        body: {
+          username: username,
+          password: passwordMD5(password),
+        },
+      }
+    );
   };
   const handleRegister = () => {
     history.push("/user/register");
