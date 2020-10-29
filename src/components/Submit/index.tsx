@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
@@ -9,12 +9,11 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 
-import { QuestionDetail } from "../../model/question-detail";
 import { LanguageResponse } from "../../model/language";
-import { ContestQuestion } from "../../model/contest-question";
 
 interface IProps {
-  question: QuestionDetail | ContestQuestion;
+  tid: string;
+  onSubmit?: (args: { language: string; code: string }) => any;
 }
 
 const DEFAULT_LANGUAGE: LanguageResponse = [
@@ -34,16 +33,34 @@ const useStyles = makeStyles(() =>
       margin: "24px 0",
     },
     selectContainter: {
-      minWidth: "192px"
-    }
+      minWidth: "192px",
+    },
   })
 );
 
-const SubmitComponent = ({ question }: IProps) => {
+const SubmitComponent = ({ tid, onSubmit }: IProps) => {
   const classes = useStyles();
   const [language, setLanguage] = useState(DEFAULT_LANGUAGE[0].value);
+  const [code, setCode] = useState("");
 
-  const handleSubmit = () => {};
+  useEffect(() => {
+    const previousCode = localStorage.getItem(tid);
+    if (previousCode) {
+      setCode(previousCode);
+    }
+
+    const handle = setInterval(() => {
+      localStorage.setItem(tid, code);
+    }, 1500);
+
+    return () => {
+      clearInterval(handle);
+    };
+  }, []);
+
+  const handleSubmit = () => {
+    onSubmit && onSubmit({ code, language });
+  };
   const handleLanguageChange = (
     event: React.ChangeEvent<{ value: unknown }>
   ) => {
@@ -55,7 +72,11 @@ const SubmitComponent = ({ question }: IProps) => {
     <div className={classes.submitContainer}>
       <FormControl>
         <InputLabel>Language</InputLabel>
-        <Select value={language} onChange={handleLanguageChange} className={classes.selectContainter}>
+        <Select
+          value={language}
+          onChange={handleLanguageChange}
+          className={classes.selectContainter}
+        >
           {DEFAULT_LANGUAGE.map((item, idx) => (
             <MenuItem key={idx} value={item.value}>
               {item.name}
@@ -69,6 +90,8 @@ const SubmitComponent = ({ question }: IProps) => {
         className={classes.codeSubmit}
         multiline
         rows="24"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
       />
       <Button
         id="submit"

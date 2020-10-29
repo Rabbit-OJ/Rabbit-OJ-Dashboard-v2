@@ -53,8 +53,12 @@ const useStyles = makeStyles(() =>
 const DetailProblem = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [question, setQuestion] = useState(DEFAULT_QUESTION);
-  const classes = useStyles();
 
+  const [submissionData, setSubmissionData] = useState(SUBMISSION_DEMO_DATA);
+  const [submissionListPage, setSubmissionListPage] = useState(1);
+  const [submissionListPageCount, setSubmissionListPageCount] = useState(10);
+
+  const classes = useStyles();
   const handleChange = (_: React.ChangeEvent<{}>, newValue: number) => {
     setTabIndex(newValue);
   };
@@ -84,12 +88,12 @@ const DetailProblem = () => {
         </Tabs>
         <div className={classes.bodyContainer}>
           {tabIndex === 0 && <DescriptionComponent question={question} />}
-          {tabIndex === 1 && <SubmitComponent question={question} />}
+          {tabIndex === 1 && <SubmitComponent tid={question.tid.toString()} />}
           {tabIndex === 2 && (
             <SubmissionListComponent
-              list={SUBMISSION_DEMO_DATA}
-              page={1}
-              pageCount={10}
+              list={submissionData}
+              page={submissionListPage}
+              pageCount={submissionListPageCount}
             />
           )}
         </div>

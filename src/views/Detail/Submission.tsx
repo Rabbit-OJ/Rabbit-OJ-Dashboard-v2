@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import clsx from "clsx";
 
@@ -9,12 +9,13 @@ import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
-import { Submission } from "../../model/submission";
+import { JudgeStatus, Submission } from "../../model/submission";
 import API_URL from "../../utils/url";
 import SubmissionDotComponent from "../../components/Dot";
 import RabbitFetch from "../../utils/fetch";
 import { displayMemory } from "../../utils/display";
 import { GeneralResponse } from "../../model/general-response";
+import { emitSnackbar } from "../../data/emitter";
 
 const DEFAULT_SUBMISSION: Submission = {
   sid: 0,
@@ -193,7 +194,9 @@ const DetailSubmission = () => {
   const { sid } = useParams<{ sid: string }>();
   const [tabIndex, setTabIndex] = useState(0);
   const [submission, setSubmission] = useState(DEFAULT_SUBMISSION);
+  const [submissionStatus, setSubmissionStatus] = useState("AC" as JudgeStatus);
   const [codeSegment, setCodeSegment] = useState("");
+  const ws = useRef<null | WebSocket>(null);
 
   const fetchCode = useCallback(async () => {
     const res = await RabbitFetch<string>(
@@ -221,7 +224,33 @@ const DetailSubmission = () => {
     const { message } = res;
     setSubmission(message);
   }, [sid]);
+  useEffect(() => {
+    if (submission.status === "ING") {
+      ws.current = new WebSocket(API_URL.SUBMISSION.SOCKET(sid));
+      ws.current.onopen = () => {
+        console.log("ws opened");
+      };
+      ws.current.onmessage = (e) => {
+        const data = JSON.parse(e.data) as { ok: number };
+        if (data.ok === 1) {
+          fetchSubmissionInfo();
+          ws.current?.close();
+        }
+      };
+      ws.current.onerror = (e) => {
+        console.error("ws error", e);
+        emitSnackbar(
+          "WebSocket error, you may not be noticed about latest submission result!",
+          { variant: "error" }
+        );
+      };
 
+      return () => {
+        ws.current?.close();
+        ws.current = null;
+      };
+    }
+  }, [submissionStatus]);
   useEffect(() => {
     fetchCode();
     fetchSubmissionInfo();

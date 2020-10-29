@@ -13,6 +13,7 @@ import API_URL from "../../utils/url";
 import { SubmissionResponse } from "../../model/submission-response";
 import { IStoreType } from "../../data";
 import { UserStore } from "../../data/user";
+import { calculatePageCount } from "../../utils/page";
 
 const LIST_DEMO_DATA: SubmissionLite[] = [
   {
@@ -56,7 +57,7 @@ const SubmissionListView = () => {
     );
 
     setList(message.list);
-    setPageCount(message.count);
+    setPageCount(calculatePageCount(message.count));
   }, [page, isLogin, uid]);
 
   useEffect(() => {

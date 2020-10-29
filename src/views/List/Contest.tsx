@@ -10,6 +10,7 @@ import RabbitFetch from "../../utils/fetch";
 import { GeneralResponse } from "../../model/general-response";
 import { GeneralListResponse } from "../../model/question-list";
 import API_URL from "../../utils/url";
+import { calculatePageCount } from "../../utils/page";
 
 const LIST_DEMO_DATA: Contest[] = [
   {
@@ -46,7 +47,7 @@ const ContestListView = () => {
     >(API_URL.CONTEST.GET_LIST(page));
 
     setList(message.list);
-    setPageCount(message.count);
+    setPageCount(calculatePageCount(message.count));
   }, [page]);
 
   useEffect(() => {

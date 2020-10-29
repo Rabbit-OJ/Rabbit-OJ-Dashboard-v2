@@ -9,6 +9,7 @@ import { useParams } from "react-router";
 import { GeneralResponse } from "../../model/general-response";
 import RabbitFetch from "../../utils/fetch";
 import API_URL from "../../utils/url";
+import { calculatePageCount } from "../../utils/page";
 
 const LIST_DEMO_DATA: QuestionItem[] = [
   {
@@ -44,7 +45,7 @@ const ProblemListView = () => {
     >(API_URL.QUESTION.GET_LIST(page));
 
     setList(message.list);
-    setPageCount(message.count);
+    setPageCount(calculatePageCount(message.count));
   }, [page]);
 
   useEffect(() => {

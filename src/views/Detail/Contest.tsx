@@ -257,7 +257,7 @@ const DetailContest = () => {
             <div className={classes.problemDetailContainer}>
               <DescriptionComponent question={item} />
               <h3>Submit</h3>
-              <SubmitComponent question={item} />
+              <SubmitComponent tid={item.tid.toString()} />
             </div>
           </AccordionDetails>
         </Accordion>
