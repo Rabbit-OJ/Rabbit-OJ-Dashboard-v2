@@ -67,27 +67,32 @@ const DetailProblem = () => {
   const history = useHistory();
 
   const fetchProblemInfo = useCallback(async () => {
-    const res = await RabbitFetch<GeneralResponse<QuestionDetail>>(
-      API_URL.QUESTION.OPTIONS_ITEM(tid),
-      {
-        method: "GET",
-      }
-    );
+    const { code, message } = await RabbitFetch<
+      GeneralResponse<QuestionDetail>
+    >(API_URL.QUESTION.OPTIONS_ITEM(tid), {
+      method: "GET",
+    });
 
-    const { message } = res;
-    setQuestion(message);
+    if (code === 200) {
+      setQuestion(message);
+    } else {
+      emitSnackbar(message, { variant: "error" });
+    }
   }, [tid]);
   const fetchSubmissionRecord = useCallback(async () => {
-    const res = await RabbitFetch<GeneralResponse<SubmissionResponse>>(
-      API_URL.QUESTION.GET_RECORD(tid, submissionListPage.toString()),
-      {
-        method: "GET",
-      }
-    );
+    const { code, message } = await RabbitFetch<
+      GeneralResponse<SubmissionResponse>
+    >(API_URL.QUESTION.GET_RECORD(tid, submissionListPage.toString()), {
+      method: "GET",
+    });
 
-    const { list, count } = res.message;
-    setSubmissionData(list);
-    setSubmissionListPageCount(calculatePageCount(count));
+    if (code === 200) {
+      const { list, count } = message;
+      setSubmissionData(list);
+      setSubmissionListPageCount(calculatePageCount(count));
+    } else {
+      emitSnackbar(message, { variant: "error" });
+    }
   }, [tid, submissionListPage]);
   const handleSubmit = useCallback(
     async ({ code, language }: { code: string; language: string }) => {

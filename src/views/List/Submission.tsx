@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { useParams } from "react-router";
 
 import Paper from "@material-ui/core/Paper";
@@ -11,9 +10,9 @@ import { GeneralResponse } from "../../model/general-response";
 import RabbitFetch from "../../utils/fetch";
 import API_URL from "../../utils/url";
 import { SubmissionResponse } from "../../model/submission-response";
-import { IStoreType } from "../../data";
-import { UserStore } from "../../data/user";
+import { useTypedSelector } from "../../data";
 import { calculatePageCount } from "../../utils/page";
+import { emitSnackbar } from "../../data/emitter";
 
 const LIST_DEMO_DATA: SubmissionLite[] = [
   {
@@ -43,10 +42,7 @@ const SubmissionListView = () => {
   const [pageCount, setPageCount] = useState(1);
   const [list, setList] = useState(LIST_DEMO_DATA);
 
-  const { isLogin, uid } = useSelector<
-    IStoreType,
-    Pick<UserStore, "isLogin" | "uid">
-  >((state) => ({
+  const { isLogin, uid } = useTypedSelector((state) => ({
     isLogin: state.user.isLogin,
     uid: state.user.uid,
   }));
@@ -56,12 +52,16 @@ const SubmissionListView = () => {
       return;
     }
 
-    const { message } = await RabbitFetch<GeneralResponse<SubmissionResponse>>(
-      API_URL.SUBMISSION.GET_USER_LIST(uid.toString(), page)
-    );
+    const { code, message } = await RabbitFetch<
+      GeneralResponse<SubmissionResponse>
+    >(API_URL.SUBMISSION.GET_USER_LIST(uid.toString(), page));
 
-    setList(message.list);
-    setPageCount(calculatePageCount(message.count));
+    if (code === 200) {
+      setList(message.list);
+      setPageCount(calculatePageCount(message.count));
+    } else {
+      emitSnackbar(message, { variant: "error" });
+    }
   }, [page, isLogin, uid]);
 
   useEffect(() => {

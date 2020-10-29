@@ -213,17 +213,21 @@ const DetailSubmission = () => {
 
     setCodeSegment(res);
   }, [sid]);
+
   const fetchSubmissionInfo = useCallback(async () => {
-    const res = await RabbitFetch<GeneralResponse<Submission>>(
+    const { code, message } = await RabbitFetch<GeneralResponse<Submission>>(
       API_URL.SUBMISSION.GET_DETAIL(sid.toString()),
       {
         method: "GET",
       }
     );
 
-    const { message } = res;
-    setSubmission(message);
-    setSubmissionStatus(message.status);
+    if (code === 200) {
+      setSubmission(message);
+      setSubmissionStatus(message.status);
+    } else {
+      emitSnackbar(message, { variant: "error" });
+    }
   }, [sid]);
   useEffect(() => {
     if (submissionStatus === "ING") {
@@ -281,10 +285,7 @@ const DetailSubmission = () => {
             <SubmissionDetailComponent submission={submission} />
           )}
           {tabIndex === 1 && (
-            <CodeComponent
-              sid={sid.toString()}
-              codeSegment={codeSegment}
-            />
+            <CodeComponent sid={sid.toString()} codeSegment={codeSegment} />
           )}
         </div>
       </Paper>

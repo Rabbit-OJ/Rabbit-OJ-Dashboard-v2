@@ -1,6 +1,8 @@
+import { combineReducers, createStore } from "redux";
+import { TypedUseSelectorHook, useSelector } from "react-redux";
+
 import { userReducer, UserStore } from "./user";
 import { loadingReducer, LoadingStore } from "./loading";
-import { combineReducers, createStore } from "redux";
 
 const reducer = combineReducers({
   user: userReducer,
@@ -12,4 +14,5 @@ export interface IStoreType {
   loading: LoadingStore;
 }
 
+export const useTypedSelector: TypedUseSelectorHook<IStoreType> = useSelector;
 export const store = createStore(reducer);

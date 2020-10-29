@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import clsx from "clsx";
 
@@ -45,13 +44,12 @@ import {
   ContestQuestion,
   ContestQuestionItem,
 } from "../../model/contest-question";
-import { ContestSubmission } from "../../model/submission";
+import { ContestSubmission, Submission } from "../../model/submission";
 import { ScoreBoardResponse } from "../../model/score-board";
 import { calculatePageCount } from "../../utils/page";
 import { ContestMyInfo } from "../../model/contest-my-info";
 import { Contest } from "../../model/contest";
-import { IStoreType } from "../../data";
-import { UserStore } from "../../data/user";
+import { useTypedSelector } from "../../data";
 import { WebsocketMessage } from "../../model/websocket";
 
 interface IHandleSubmitProps {
@@ -88,10 +86,7 @@ const DetailContest = () => {
   const [clarifyRefreshTime, setClarifyRefreshTime] = useState(new Date());
   const [infoRefreshTime, setInfoRefreshTime] = useState(new Date());
   const [problemMap, setProblemMap] = useState(INITIAL_PROBLEM_MAP());
-  const { isLogin, isAdmin, uid } = useSelector<
-    IStoreType,
-    Pick<UserStore, "isLogin" | "isAdmin" | "uid">
-  >((state) => ({
+  const { isLogin, isAdmin, uid } = useTypedSelector((state) => ({
     isLogin: state.user.isLogin,
     isAdmin: state.user.isAdmin,
     uid: state.user.uid,
@@ -308,28 +303,30 @@ const DetailContest = () => {
   }, [isLogin, myInfo.registered, cid, uid]);
   const fetchSubmissionInfo = useCallback(
     async (sid: number) => {
-      const res = await RabbitFetch<GeneralResponse<ContestSubmission>>(
-        API_URL.CONTEST.GET_SUBMISSION_ONE(cid.toString(), sid.toString()),
-        {
-          method: "GET",
-        }
-      );
-
-      const { message } = res;
-      setSubmissionList((previousSubmissionList) => {
-        const nextSubmissionList = previousSubmissionList.map((item) => {
-          if (item.sid === sid) {
-            return {
-              ...message,
-              created_at: message.created_at.toLocaleString(),
-            } as ContestSubmission<string>;
-          } else {
-            return item;
-          }
-        });
-
-        return nextSubmissionList;
+      const { code, message } = await RabbitFetch<
+        GeneralResponse<ContestSubmission>
+      >(API_URL.CONTEST.GET_SUBMISSION_ONE(cid.toString(), sid.toString()), {
+        method: "GET",
       });
+
+      if (code === 200) {
+        setSubmissionList((previousSubmissionList) => {
+          const nextSubmissionList = previousSubmissionList.map((item) => {
+            if (item.sid === sid) {
+              return {
+                ...message,
+                created_at: message.created_at.toLocaleString(),
+              } as ContestSubmission<string>;
+            } else {
+              return item;
+            }
+          });
+
+          return nextSubmissionList;
+        });
+      } else {
+        emitSnackbar(message, { variant: "error" });
+      }
     },
     [cid]
   );
@@ -622,7 +619,7 @@ const DetailContest = () => {
     return (
       <>
         {problemList.map((item, i) => (
-          <Accordion key={item.tid}>
+          <Accordion key={item.tid} TransitionProps={{ unmountOnExit: true }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography className={classes.heading}>
                 [T{(i + 1).toString()}] {item.subject}
@@ -670,10 +667,41 @@ const DetailContest = () => {
     );
   };
   const SubmissionsComponent = () => {
+    const handleExpanded = (sid: number) => async (
+      _: React.ChangeEvent<{}>,
+      expanded: boolean
+    ) => {
+      if (!expanded) return;
+
+      if (
+        submissionCaseInfo.has(sid) &&
+        submissionCaseInfo.get(sid)!.status === "ING"
+      ) {
+        const { code, message } = await RabbitFetch<
+          GeneralResponse<Submission>
+        >(API_URL.SUBMISSION.GET_DETAIL(sid.toString()), {
+          method: "GET",
+        });
+
+        if (code === 200) {
+          setSubmissionCaseInfo((previousSubmissionCaseInfo) => {
+            previousSubmissionCaseInfo.set(sid, message);
+            return previousSubmissionCaseInfo;
+          });
+        } else {
+          emitSnackbar(message, { variant: "error" });
+        }
+      }
+    };
+
     return (
       <>
         {submissionList.map((item) => (
-          <Accordion key={item.sid}>
+          <Accordion
+            key={item.sid}
+            TransitionProps={{ unmountOnExit: true }}
+            onChange={handleExpanded(item.sid)}
+          >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography className={classes.heading}>
                 [T{(problemMap.get(item.tid)?.id ?? -1) + 1}]{" "}

@@ -11,6 +11,7 @@ import { GeneralResponse } from "../../model/general-response";
 import { GeneralListResponse } from "../../model/question-list";
 import API_URL from "../../utils/url";
 import { calculatePageCount } from "../../utils/page";
+import { emitSnackbar } from "../../data/emitter";
 
 const LIST_DEMO_DATA: Contest[] = [
   {
@@ -42,12 +43,16 @@ const ContestListView = () => {
   const [list, setList] = useState(LIST_DEMO_DATA);
 
   const fetchList = useCallback(async () => {
-    const { message } = await RabbitFetch<
+    const { code, message } = await RabbitFetch<
       GeneralResponse<GeneralListResponse<Contest>>
     >(API_URL.CONTEST.GET_LIST(page));
 
-    setList(message.list);
-    setPageCount(calculatePageCount(message.count));
+    if (code === 200) {
+      setList(message.list);
+      setPageCount(calculatePageCount(message.count));
+    } else {
+      emitSnackbar(message, { variant: "error" });
+    }
   }, [page]);
 
   useEffect(() => {

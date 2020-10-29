@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useHistory } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { OptionsObject, SnackbarMessage, useSnackbar } from "notistack";
 
 import makeStyles from "@material-ui/core/styles/makeStyles";
@@ -26,10 +26,8 @@ import EmojiEventsIcon from "@material-ui/icons/EmojiEvents";
 import BackupIcon from "@material-ui/icons/Backup";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 
-import { UserStore } from "../../data/user";
 import { loadingDec, loadingInc, logout } from "../../data/actions";
-import { IStoreType } from "../../data";
-import { LoadingStore } from "../../data/loading";
+import { useTypedSelector } from "../../data";
 import { loadingEmitter, snackbarEmitter } from "../../data/emitter";
 
 const useStyles = makeStyles((theme) => ({
@@ -52,10 +50,7 @@ const Bar = () => {
   const [navigationOpenState, setNavigationOpenState] = React.useState(false);
   const history = useHistory();
 
-  const { isLogin, username, loadingCount } = useSelector<
-    IStoreType,
-    Pick<UserStore, "isLogin" | "username"> & Pick<LoadingStore, "loadingCount">
-  >((state) => ({
+  const { isLogin, username, loadingCount } = useTypedSelector((state) => ({
     isLogin: state.user.isLogin,
     username: state.user.username,
     loadingCount: state.loading.loadingCount,
