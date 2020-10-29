@@ -54,6 +54,11 @@ import { IStoreType } from "../../data";
 import { UserStore } from "../../data/user";
 import { WebsocketMessage } from "../../model/websocket";
 
+interface IHandleSubmitProps {
+  language: string;
+  code: string;
+}
+
 const DetailContest = () => {
   const { cid } = useParams<{ cid: string }>();
 
@@ -301,6 +306,57 @@ const DetailContest = () => {
       emitSnackbar("WebSocket connect failed!", { variant: "error" });
     };
   }, [isLogin, myInfo.registered, cid, uid]);
+  const fetchSubmissionInfo = useCallback(
+    async (sid: number) => {
+      const res = await RabbitFetch<GeneralResponse<ContestSubmission>>(
+        API_URL.CONTEST.GET_SUBMISSION_ONE(cid.toString(), sid.toString()),
+        {
+          method: "GET",
+        }
+      );
+
+      const { message } = res;
+      setSubmissionList((previousSubmissionList) => {
+        const nextSubmissionList = previousSubmissionList.map((item) => {
+          if (item.sid === sid) {
+            return {
+              ...message,
+              created_at: message.created_at.toLocaleString(),
+            } as ContestSubmission<string>;
+          } else {
+            return item;
+          }
+        });
+
+        return nextSubmissionList;
+      });
+    },
+    [cid]
+  );
+  const socketContestSubmissionInfo = useCallback(
+    (sid: number) => {
+      const ws = new WebSocket(API_URL.SUBMISSION.SOCKET(sid.toString()));
+      ws.onopen = () => {
+        console.log("ws opened");
+      };
+      ws.onmessage = (e) => {
+        const data = JSON.parse(e.data) as { ok: number };
+        if (data.ok === 1) {
+          fetchSubmissionInfo(sid);
+          ws.close();
+        }
+      };
+
+      ws.onerror = (e) => {
+        console.error("ws error", e);
+        emitSnackbar(
+          "WebSocket error, you may not be noticed about latest submission result!",
+          { variant: "error" }
+        );
+      };
+    },
+    [fetchSubmissionInfo]
+  );
 
   useEffect(() => {
     const cleanFunctions: Array<() => any> = [];
@@ -499,48 +555,120 @@ const DetailContest = () => {
       </>
     );
   };
-  const ProblemsComponent = () => (
-    <>
-      {problemList.map((item, i) => (
-        <Accordion key={item.tid}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography className={classes.heading}>
-              [T{(i + 1).toString()}] {item.subject}
-            </Typography>
-            <Typography className={classes.secondaryHeading}>
-              🌟 {item.score}
-              {myInfo && myInfo.progress[i] && myInfo.progress[i].bug > 0 && (
-                <span className={classes.questionSubtitleTip}>
-                  🐛 {myInfo.progress[i].bug}
-                </span>
-              )}
-              {myInfo &&
-                myInfo.progress[i] &&
-                myInfo.progress[i].status === 1 && (
+  const ProblemsComponent = () => {
+    const [submittingList, setSubmittingList] = useState(new Set<string>());
+
+    const handleSubmit = useCallback(
+      (tid: string) => async ({ language, code }: IHandleSubmitProps) => {
+        if (language === "") {
+          emitSnackbar("Select a language first!", { variant: "error" });
+          return;
+        }
+
+        if (submittingList.has(tid)) {
+          emitSnackbar(
+            "Last submission hasn't done yet, please wait for a while.",
+            { variant: "error" }
+          );
+          return;
+        }
+
+        setSubmittingList((previousSubmittingList) => {
+          previousSubmittingList.add(tid);
+          return previousSubmittingList;
+        });
+        try {
+          const { code: stautsCode, message } = await RabbitFetch<
+            GeneralResponse<number>
+          >(API_URL.CONTEST.POST_SUBMIT(cid, tid), {
+            method: "POST",
+            body: { language, code },
+          });
+
+          if (stautsCode === 200) {
+            socketContestSubmissionInfo(message);
+
+            const currentSubmissionItem: ContestSubmission<string> = {
+              sid: message,
+              cid: +cid,
+              uid,
+              tid: +tid,
+              status: 0,
+              total_time:
+                ((new Date().getTime() -
+                  new Date(contest.start_time).getTime()) /
+                  1000) |
+                0,
+              created_at: new Date().toLocaleString(),
+            };
+            setSubmissionList((previousSubmissionList) => [
+              ...previousSubmissionList,
+              currentSubmissionItem,
+            ]);
+          } else {
+            emitSnackbar(`Submission failed: ${message}`, { variant: "error" });
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setSubmittingList((previousSubmittingList) => {
+            previousSubmittingList.delete(tid);
+            return previousSubmittingList;
+          });
+        }
+      },
+      [submittingList]
+    );
+    return (
+      <>
+        {problemList.map((item, i) => (
+          <Accordion key={item.tid}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography className={classes.heading}>
+                [T{(i + 1).toString()}] {item.subject}
+              </Typography>
+              <Typography className={classes.secondaryHeading}>
+                🌟 {item.score}
+                {myInfo && myInfo.progress[i] && myInfo.progress[i].bug > 0 && (
                   <span className={classes.questionSubtitleTip}>
-                    ✅ {displayRelativeTime(myInfo.progress[i].total_time)}
+                    🐛 {myInfo.progress[i].bug}
                   </span>
                 )}
-            </Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <div className={classes.problemDetailContainer}>
-              <DescriptionComponent question={item} isContest={true} />
-              <h3>Submit</h3>
-              <SubmitComponent tid={item.tid.toString()} />
-            </div>
-          </AccordionDetails>
-        </Accordion>
-      ))}
-      {contest.status === 1 && (
-        <div className={classes.refreshTimeContainer}>
-          <Button variant="text" color="primary" onClick={() => fetchProblems}>
-            Last Updated: {questionRefreshTime.toLocaleString()}
-          </Button>
-        </div>
-      )}
-    </>
-  );
+                {myInfo &&
+                  myInfo.progress[i] &&
+                  myInfo.progress[i].status === 1 && (
+                    <span className={classes.questionSubtitleTip}>
+                      ✅ {displayRelativeTime(myInfo.progress[i].total_time)}
+                    </span>
+                  )}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <div className={classes.problemDetailContainer}>
+                <DescriptionComponent question={item} isContest={true} />
+                <h3>Submit</h3>
+                <SubmitComponent
+                  tid={item.tid.toString()}
+                  onSubmit={handleSubmit(item.tid.toString())}
+                />
+              </div>
+            </AccordionDetails>
+          </Accordion>
+        ))}
+        {contest.status === 1 && (
+          <div className={classes.refreshTimeContainer}>
+            <Button
+              variant="text"
+              color="primary"
+              onClick={() => fetchProblems}
+            >
+              Last Updated: {questionRefreshTime.toLocaleString()}
+            </Button>
+          </div>
+        )}
+      </>
+    );
+  };
   const SubmissionsComponent = () => {
     return (
       <>
