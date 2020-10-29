@@ -222,7 +222,9 @@ const DetailSubmission = () => {
     );
 
     const { message } = res;
+
     setSubmission(message);
+    setSubmissionStatus(message.status);
   }, [sid]);
   useEffect(() => {
     if (submission.status === "ING") {

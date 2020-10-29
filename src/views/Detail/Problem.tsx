@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useHistory, useParams } from "react-router-dom";
 
 import Paper from "@material-ui/core/Paper";
 import Tabs from "@material-ui/core/Tabs";
@@ -10,6 +11,12 @@ import { QuestionDetail } from "../../model/question-detail";
 import SubmitComponent from "../../components/Submit";
 import { SubmissionLite } from "../../model/submission";
 import SubmissionListComponent from "../../components/List/Submission";
+import RabbitFetch from "../../utils/fetch";
+import API_URL from "../../utils/url";
+import { GeneralResponse } from "../../model/general-response";
+import { SubmissionResponse } from "../../model/submission-response";
+import { calculatePageCount } from "../../utils/page";
+import { emitSnackbar } from "../../data/emitter";
 
 const DEFAULT_QUESTION: QuestionDetail = {
   tid: 1,
@@ -51,16 +58,73 @@ const useStyles = makeStyles(() =>
 );
 
 const DetailProblem = () => {
+  const { tid } = useParams<{ tid: string }>();
   const [tabIndex, setTabIndex] = useState(0);
   const [question, setQuestion] = useState(DEFAULT_QUESTION);
-
   const [submissionData, setSubmissionData] = useState(SUBMISSION_DEMO_DATA);
   const [submissionListPage, setSubmissionListPage] = useState(1);
   const [submissionListPageCount, setSubmissionListPageCount] = useState(10);
+  const history = useHistory();
+
+  const fetchProblemInfo = useCallback(async () => {
+    const res = await RabbitFetch<GeneralResponse<QuestionDetail>>(
+      API_URL.QUESTION.OPTIONS_ITEM(tid),
+      {
+        method: "GET",
+      }
+    );
+
+    const { message } = res;
+    setQuestion(message);
+  }, [tid]);
+  const fetchSubmissionRecord = useCallback(async () => {
+    const res = await RabbitFetch<GeneralResponse<SubmissionResponse>>(
+      API_URL.QUESTION.GET_RECORD(tid, submissionListPage.toString()),
+      {
+        method: "GET",
+      }
+    );
+
+    const { list, count } = res.message;
+    setSubmissionData(list);
+    setSubmissionListPageCount(calculatePageCount(count));
+  }, [submissionListPage]);
+  const handleSubmit = useCallback(
+    async ({ code, language }: { code: string; language: string }) => {
+      if (language === "") {
+        emitSnackbar("Select a language first!", { variant: "warning" });
+        return;
+      }
+
+      const { code: stautsCode, message } = await RabbitFetch<
+        GeneralResponse<string>
+      >(API_URL.QUESTION.POST_SUBMIT(tid), {
+        method: "POST",
+        body: { language, code },
+      });
+
+      if (stautsCode === 200) {
+        history.push(`/detail/submission/${message}`);
+      } else {
+        emitSnackbar(message, { variant: "error" });
+      }
+    },
+    [tid]
+  );
+
+  useEffect(() => {
+    fetchProblemInfo();
+  }, [tid]);
+  useEffect(() => {
+    fetchSubmissionRecord();
+  }, [submissionListPage]);
 
   const classes = useStyles();
   const handleChange = (_: React.ChangeEvent<{}>, newValue: number) => {
     setTabIndex(newValue);
+  };
+  const handleSubmissionOnPageChange = (newPage: number) => {
+    setSubmissionListPage(newPage);
   };
 
   return (
@@ -84,16 +148,22 @@ const DetailProblem = () => {
           <Tab label="Detail" />
           <Tab label="Submit" />
           <Tab label="Submission" />
-          <Tab label="Admin" />
+          {/* <Tab label="Admin" /> */}
         </Tabs>
         <div className={classes.bodyContainer}>
           {tabIndex === 0 && <DescriptionComponent question={question} />}
-          {tabIndex === 1 && <SubmitComponent tid={question.tid.toString()} />}
+          {tabIndex === 1 && (
+            <SubmitComponent
+              tid={question.tid.toString()}
+              onSubmit={handleSubmit}
+            />
+          )}
           {tabIndex === 2 && (
             <SubmissionListComponent
               list={submissionData}
               page={submissionListPage}
               pageCount={submissionListPageCount}
+              onPageChange={handleSubmissionOnPageChange}
             />
           )}
         </div>
