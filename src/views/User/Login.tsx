@@ -40,7 +40,7 @@ const UserLogin = () => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    const response = await RabbitFetch<GeneralResponse<LoginResponse>>(
+    const resp = await RabbitFetch<GeneralResponse<LoginResponse>>(
       API_URL.USER.POST_LOGIN,
       {
         method: "POST",

@@ -45,12 +45,12 @@ const UserRegister = () => {
     history.push("/user/login");
   };
   const handleRegister = async () => {
-    if (password != passwordRepeat) {
+    if (password !== passwordRepeat) {
       emitSnackbar("Password inconsistent.", { variant: "error" });
       return;
     }
 
-    const response = await RabbitFetch<GeneralResponse>(
+    const resp = await RabbitFetch<GeneralResponse>(
       API_URL.USER.POST_REGISTER,
       {
         method: "POST",

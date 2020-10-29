@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import clsx from "clsx";
 
@@ -35,6 +35,19 @@ import {
   INITIAL_PROBLEM_MAP,
   INITIAL_SUNMISSION_CASE_INFO_MAP,
 } from "./Contest.data";
+import { emitSnackbar } from "../../data/emitter";
+import RabbitFetch from "../../utils/fetch";
+import API_URL from "../../utils/url";
+import { ContestClarify } from "../../model/contest-clarify";
+import { GeneralResponse } from "../../model/general-response";
+import {
+  ContestQuestion,
+  ContestQuestionItem,
+} from "../../model/contest-question";
+import { ContestSubmission } from "../../model/submission";
+import { ScoreBoardResponse } from "../../model/score-board";
+import { calculatePageCount } from "../../utils/page";
+import { ContestMyInfo } from "../../model/contest-my-info";
 
 const DetailContest = () => {
   const { cid } = useParams<{ cid: string }>();
@@ -52,9 +65,9 @@ const DetailContest = () => {
   );
   const [problemList, setProblemList] = useState(DEFAULT_PROBLEM);
   const [scoreboardBlocked, setScoreboardBlocked] = useState(false);
+  const [scoreboardPage, setScoreboardPage] = useState(1);
   const [scoreboardPageCount, setScoreboardPageCount] = useState(10);
   const [scoreboardList, setScoreboardList] = useState(DEFAULT_SCOREBOARD_LIST);
-
   const [scoreboardRefreshTime, setScoreboardRefreshTime] = useState(
     new Date()
   );
@@ -64,10 +77,7 @@ const DetailContest = () => {
   );
   const [clarifyRefreshTime, setClarifyRefreshTime] = useState(new Date());
   const [infoRefreshTime, setInfoRefreshTime] = useState(new Date());
-
-  const [problemMap, setProblemMap] = useState(
-    INITIAL_PROBLEM_MAP()
-  );
+  const [problemMap, setProblemMap] = useState(INITIAL_PROBLEM_MAP());
 
   const classes = useDetailContestStyles();
   const isLogin = true; // todo
@@ -85,44 +95,145 @@ const DetailContest = () => {
     );
   };
 
-  const fetchMyInfo = async () => {
-    try {
-    } catch (e) {
-    } finally {
-      setInfoRefreshTime(new Date());
-    }
-  };
-  const fetchScoreBoard = async () => {
-    try {
-    } catch (e) {
-    } finally {
-      setScoreboardRefreshTime(new Date());
-    }
-  };
-  const fetchClarifyList = async () => {
-    try {
-    } catch (e) {
-    } finally {
-      setClarifyRefreshTime(new Date());
-    }
-  };
-  const fetchProblems = async () => {
-    try {
-    } catch (e) {
-    } finally {
-      setQuestionRefreshTime(new Date());
-    }
-  };
-  const fetchSubmissionList = async () => {
-    try {
-    } catch (e) {
-    } finally {
-      setSubmissionRefreshTime(new Date());
-    }
-  };
+  const fetchMyInfo = useCallback(
+    async (showNotice: boolean = false) => {
+      try {
+        const { code, message } = await RabbitFetch<
+          GeneralResponse<ContestMyInfo>
+        >(API_URL.CONTEST.GET_MY_INFO(cid), {
+          method: "GET",
+        });
+
+        if (code === 200) {
+          setMyInfo(message);
+        } else {
+          emitSnackbar(message, { variant: "error" });
+        }
+
+        if (showNotice) emitSnackbar("Personal info updated");
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setInfoRefreshTime(new Date());
+      }
+    },
+    [cid]
+  );
+  const fetchScoreBoard = useCallback(
+    async (showNotice: boolean = false) => {
+      try {
+        const { code, message } = await RabbitFetch<
+          GeneralResponse<ScoreBoardResponse>
+        >(API_URL.CONTEST.GET_SCORE_BOARD(cid, scoreboardPage.toString()), {
+          method: "GET",
+        });
+
+        if (code === 200) {
+          const { list, blocked, count } = message;
+          setScoreboardList(list);
+          setScoreboardBlocked(blocked);
+          setContest((prev) => ({
+            ...prev,
+            participants: count,
+          }));
+          setScoreboardPageCount(calculatePageCount(count));
+        } else {
+          emitSnackbar(message, { variant: "error" });
+        }
+
+        if (showNotice) emitSnackbar("Scoreboard updated");
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setScoreboardRefreshTime(new Date());
+      }
+    },
+    [cid, scoreboardPage]
+  );
+  const fetchClarifyList = useCallback(
+    async (showNotice: boolean = false) => {
+      try {
+        const { code, message } = await RabbitFetch<
+          GeneralResponse<Array<ContestClarify<Date>>>
+        >(API_URL.CONTEST.GET_CLARIFY(cid), {
+          method: "GET",
+        });
+
+        if (code === 200) {
+          setClarifyList(
+            message.map((item) => ({
+              ...item,
+              created_at: new Date(item.created_at).toLocaleString(),
+            }))
+          );
+        } else {
+          emitSnackbar(message, { variant: "error" });
+        }
+        if (showNotice) emitSnackbar("Clarification updated");
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setClarifyRefreshTime(new Date());
+      }
+    },
+    [cid]
+  );
+  const fetchProblems = useCallback(
+    async (showNotice: boolean = false) => {
+      try {
+        const { code, message } = await RabbitFetch<
+          GeneralResponse<Array<ContestQuestion>>
+        >(API_URL.CONTEST.GET_QUESTIONS(cid), {
+          method: "GET",
+        });
+
+        if (code === 200) {
+          const problemMap = new Map<number, ContestQuestionItem>();
+          message.forEach((item) => {
+            problemMap.set(item.tid, { id: item.id, subject: item.subject });
+          });
+
+          setProblemList(message);
+          setProblemMap(problemMap);
+        } else {
+          emitSnackbar(message, { variant: "error" });
+        }
+
+        if (showNotice) emitSnackbar("Problem list updated");
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setQuestionRefreshTime(new Date());
+      }
+    },
+    [cid]
+  );
+  const fetchSubmissionList = useCallback(
+    async (showNotice: boolean = false) => {
+      try {
+        const { code, message } = await RabbitFetch<
+          GeneralResponse<Array<ContestSubmission>>
+        >(API_URL.CONTEST.GET_SUBMISSION_LIST(cid), {
+          method: "GET",
+        });
+
+        if (code === 200) {
+          setSubmissionList(message);
+        } else {
+          emitSnackbar(message, { variant: "error" });
+        }
+
+        if (showNotice) emitSnackbar("Submission list updated");
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setSubmissionRefreshTime(new Date());
+      }
+    },
+    [cid]
+  );
 
   const ScoreboardComponent = () => {
-    const [scoreboardPage, setScoreboardPage] = useState(1);
     const handleScoreboardPageChange = (
       _: React.ChangeEvent<unknown>,
       newPage: number
@@ -221,7 +332,11 @@ const DetailContest = () => {
         )}
         {contest.status === 1 && (
           <div className={classes.refreshTimeContainer}>
-            <Button variant="text" color="primary" onClick={fetchScoreBoard}>
+            <Button
+              variant="text"
+              color="primary"
+              onClick={() => fetchScoreBoard}
+            >
               Last Updated: {scoreboardRefreshTime.toLocaleString()}
             </Button>
           </div>
@@ -264,7 +379,7 @@ const DetailContest = () => {
       ))}
       {contest.status === 1 && (
         <div className={classes.refreshTimeContainer}>
-          <Button variant="text" color="primary" onClick={fetchProblems}>
+          <Button variant="text" color="primary" onClick={() => fetchProblems}>
             Last Updated: {questionRefreshTime.toLocaleString()}
           </Button>
         </div>
@@ -321,7 +436,7 @@ const DetailContest = () => {
             <Button
               variant="text"
               color="primary"
-              onClick={fetchSubmissionList}
+              onClick={() => fetchSubmissionList}
             >
               Last Updated: {submissionRefreshTime.toLocaleString()}
             </Button>
@@ -347,7 +462,11 @@ const DetailContest = () => {
         ))}
         {contest.status === 1 && (
           <div className={classes.refreshTimeContainer}>
-            <Button variant="text" color="primary" onClick={fetchClarifyList}>
+            <Button
+              variant="text"
+              color="primary"
+              onClick={() => fetchClarifyList}
+            >
               Last Updated: {clarifyRefreshTime.toLocaleString()}
             </Button>
           </div>
@@ -402,7 +521,7 @@ const DetailContest = () => {
         )}
         {contest.status === 1 && (
           <div className={classes.refreshTimeContainer}>
-            <Button variant="text" color="primary" onClick={fetchMyInfo}>
+            <Button variant="text" color="primary" onClick={() => fetchMyInfo}>
               Last Updated: {infoRefreshTime.toLocaleString()}
             </Button>
           </div>

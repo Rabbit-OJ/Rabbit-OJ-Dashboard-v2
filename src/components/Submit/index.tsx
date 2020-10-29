@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
@@ -48,7 +47,8 @@ const SubmitComponent = ({ tid, onSubmit }: IProps) => {
     if (previousCode) {
       setCode(previousCode);
     }
-
+  }, [tid]);
+  useEffect(() => {
     const handle = setInterval(() => {
       localStorage.setItem(tid, code);
     }, 1500);
@@ -56,7 +56,7 @@ const SubmitComponent = ({ tid, onSubmit }: IProps) => {
     return () => {
       clearInterval(handle);
     };
-  }, []);
+  });
 
   const handleSubmit = () => {
     onSubmit && onSubmit({ code, language });

@@ -88,7 +88,7 @@ const DetailProblem = () => {
     const { list, count } = res.message;
     setSubmissionData(list);
     setSubmissionListPageCount(calculatePageCount(count));
-  }, [submissionListPage]);
+  }, [tid, submissionListPage]);
   const handleSubmit = useCallback(
     async ({ code, language }: { code: string; language: string }) => {
       if (language === "") {
@@ -109,15 +109,15 @@ const DetailProblem = () => {
         emitSnackbar(message, { variant: "error" });
       }
     },
-    [tid]
+    [tid, history]
   );
 
   useEffect(() => {
     fetchProblemInfo();
-  }, [tid]);
+  }, [fetchProblemInfo]);
   useEffect(() => {
     fetchSubmissionRecord();
-  }, [submissionListPage]);
+  }, [fetchSubmissionRecord]);
 
   const classes = useStyles();
   const handleChange = (_: React.ChangeEvent<{}>, newValue: number) => {

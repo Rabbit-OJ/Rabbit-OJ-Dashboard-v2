@@ -52,6 +52,10 @@ const SubmissionListView = () => {
   }));
 
   const fetchList = useCallback(async () => {
+    if (!isLogin) {
+      return;
+    }
+
     const { message } = await RabbitFetch<GeneralResponse<SubmissionResponse>>(
       API_URL.SUBMISSION.GET_USER_LIST(uid.toString(), page)
     );

@@ -1,7 +1,7 @@
 export const LOGIN = "LOGIN";
-export type LOGIN = typeof LOGIN;
+export type ILOGIN = typeof LOGIN;
 export interface Login {
-  type: LOGIN;
+  type: ILOGIN;
   isAdmin: boolean;
   username: string;
   uid: number;
@@ -20,9 +20,9 @@ export const login = (
 };
 
 export const LOGOUT = "LOGOUT";
-export type LOGOUT = typeof LOGOUT;
+export type ILOGOUT = typeof LOGOUT;
 export interface Logout {
-  type: LOGOUT;
+  type: ILOGOUT;
 }
 export const logout = (): Logout => {
   return {
@@ -31,9 +31,9 @@ export const logout = (): Logout => {
 };
 
 export const LOADING_INC = "LOADING_INC";
-export type LOADING_INC = typeof LOADING_INC;
+export type ILOADING_INC = typeof LOADING_INC;
 export interface LoadingIncrement {
-  type: LOADING_INC;
+  type: ILOADING_INC;
 }
 export const loadingInc = (): LoadingIncrement => {
   return {
@@ -42,9 +42,9 @@ export const loadingInc = (): LoadingIncrement => {
 };
 
 export const LOADING_DEC = "LOADING_DEC";
-export type LOADING_DEC = typeof LOADING_DEC;
+export type ILOADING_DEC = typeof LOADING_DEC;
 export interface LoadingDecrement {
-  type: LOADING_DEC;
+  type: ILOADING_DEC;
 }
 export const loadingDec = (): LoadingDecrement => {
   return {

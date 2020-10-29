@@ -200,7 +200,7 @@ const DetailSubmission = () => {
 
   const fetchCode = useCallback(async () => {
     const res = await RabbitFetch<string>(
-      API_URL.SUBMISSION.POST_CODE(submission.sid.toString()),
+      API_URL.SUBMISSION.POST_CODE(sid.toString()),
       {
         method: "POST",
         body: `token=${localStorage.getItem("token")}`,
@@ -215,19 +215,18 @@ const DetailSubmission = () => {
   }, [sid]);
   const fetchSubmissionInfo = useCallback(async () => {
     const res = await RabbitFetch<GeneralResponse<Submission>>(
-      API_URL.SUBMISSION.GET_DETAIL(submission.sid.toString()),
+      API_URL.SUBMISSION.GET_DETAIL(sid.toString()),
       {
         method: "GET",
       }
     );
 
     const { message } = res;
-
     setSubmission(message);
     setSubmissionStatus(message.status);
   }, [sid]);
   useEffect(() => {
-    if (submission.status === "ING") {
+    if (submissionStatus === "ING") {
       ws.current = new WebSocket(API_URL.SUBMISSION.SOCKET(sid));
       ws.current.onopen = () => {
         console.log("ws opened");
@@ -252,11 +251,11 @@ const DetailSubmission = () => {
         ws.current = null;
       };
     }
-  }, [submissionStatus]);
+  }, [sid, submissionStatus, fetchSubmissionInfo]);
   useEffect(() => {
     fetchCode();
     fetchSubmissionInfo();
-  }, [sid]);
+  }, [sid, fetchCode, fetchSubmissionInfo]);
 
   const handleChange = (_: React.ChangeEvent<{}>, newValue: number) => {
     setTabIndex(newValue);
@@ -283,7 +282,7 @@ const DetailSubmission = () => {
           )}
           {tabIndex === 1 && (
             <CodeComponent
-              sid={submission.sid.toString()}
+              sid={sid.toString()}
               codeSegment={codeSegment}
             />
           )}

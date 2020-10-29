@@ -66,7 +66,7 @@ const Bar = () => {
   useEffect(() => {
     console.log(1);
     const loadingEvent = (arg: -1 | 1) => {
-      if (arg == -1) {
+      if (arg === -1) {
         dispatch(loadingDec());
       } else {
         dispatch(loadingInc());
