@@ -1,12 +1,10 @@
 import React from "react";
-
 import { Link } from "react-router-dom";
 
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import Pagination from "@material-ui/lab/Pagination";
 
 import { QuestionItem } from "../../model/question-list";
-import { loadingEmitter } from "../../data/emitter";
 
 interface IProblemListComponentProps {
   list: Array<QuestionItem>;

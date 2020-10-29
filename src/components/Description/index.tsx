@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useParams } from "react-router";
+import React from "react";
 
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { QuestionDetail } from "../../model/question-detail";
@@ -26,12 +25,10 @@ const useStyles = makeStyles(() =>
 
 interface IProps {
   question: QuestionDetail | ContestQuestion;
+  isContest: boolean;
 }
 
-const DescriptionComponent = ({ question }: IProps) => {
-  const { tid } = useParams<{ tid: string }>();
-
-  const [isContest, setIsContest] = useState(false);
+const DescriptionComponent = ({ question, isContest }: IProps) => {
   const classes = useStyles();
 
   return (

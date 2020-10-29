@@ -151,7 +151,9 @@ const DetailProblem = () => {
           {/* <Tab label="Admin" /> */}
         </Tabs>
         <div className={classes.bodyContainer}>
-          {tabIndex === 0 && <DescriptionComponent question={question} />}
+          {tabIndex === 0 && (
+            <DescriptionComponent question={question} isContest={false} />
+          )}
           {tabIndex === 1 && (
             <SubmitComponent
               tid={question.tid.toString()}

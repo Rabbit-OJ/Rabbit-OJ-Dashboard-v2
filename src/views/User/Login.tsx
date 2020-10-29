@@ -10,6 +10,7 @@ import passwordMD5 from "../../utils/password";
 import API_URL from "../../utils/url";
 import { GeneralResponse } from "../../model/general-response";
 import { LoginResponse } from "../../model/login-response";
+import { emitSnackbar } from "../../data/emitter";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -40,7 +41,7 @@ const UserLogin = () => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    const resp = await RabbitFetch<GeneralResponse<LoginResponse>>(
+    const { code, message } = await RabbitFetch<GeneralResponse<LoginResponse>>(
       API_URL.USER.POST_LOGIN,
       {
         method: "POST",
@@ -50,6 +51,13 @@ const UserLogin = () => {
         },
       }
     );
+
+    if (code === 200) {
+      history.push("/list/problem/1");
+      emitSnackbar("Login success!", { variant: "success" });
+    } else {
+      emitSnackbar(message, { variant: "error" });
+    }
   };
   const handleRegister = () => {
     history.push("/user/register");

@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import clsx from "clsx";
 
@@ -48,6 +49,10 @@ import { ContestSubmission } from "../../model/submission";
 import { ScoreBoardResponse } from "../../model/score-board";
 import { calculatePageCount } from "../../utils/page";
 import { ContestMyInfo } from "../../model/contest-my-info";
+import { Contest } from "../../model/contest";
+import { IStoreType } from "../../data";
+import { UserStore } from "../../data/user";
+import { WebsocketMessage } from "../../model/websocket";
 
 const DetailContest = () => {
   const { cid } = useParams<{ cid: string }>();
@@ -78,25 +83,50 @@ const DetailContest = () => {
   const [clarifyRefreshTime, setClarifyRefreshTime] = useState(new Date());
   const [infoRefreshTime, setInfoRefreshTime] = useState(new Date());
   const [problemMap, setProblemMap] = useState(INITIAL_PROBLEM_MAP());
-
+  const { isLogin, isAdmin, uid } = useSelector<
+    IStoreType,
+    Pick<UserStore, "isLogin" | "isAdmin" | "uid">
+  >((state) => ({
+    isLogin: state.user.isLogin,
+    isAdmin: state.user.isAdmin,
+    uid: state.user.uid,
+  }));
+  const contestWebsocket = useRef<null | WebSocket>(null);
   const classes = useDetailContestStyles();
-  const isLogin = true; // todo
 
-  const handleTabChange = (_: React.ChangeEvent<{}>, newValue: number) => {
-    setTabIndex(newValue);
-  };
-  const handleRegister = (action: string) => () => {};
-
-  const renderRemainTime = () => {
+  const renderRemainTime = useCallback(() => {
     const now = new Date();
     const endContest = new Date(contest.end_time);
     setRemainTime(
       displayRelativeTime(((endContest.getTime() - now.getTime()) / 1000) | 0)
     );
-  };
+  }, [contest]);
+  const fetchContestInfo = useCallback(async () => {
+    const { code, message } = await RabbitFetch<GeneralResponse<Contest>>(
+      API_URL.CONTEST.GET_INFO(cid),
+      {
+        method: "GET",
+      }
+    );
 
+    if (code === 200) {
+      const nextState = {
+        ...message,
+        start_time: message.start_time.toLocaleString(),
+        block_time: message.block_time.toLocaleString(),
+        end_time: message.end_time.toLocaleString(),
+      };
+      setContest(nextState);
+      return nextState;
+    } else {
+      emitSnackbar(message, { variant: "error" });
+      return Promise.reject(message);
+    }
+  }, [cid]);
   const fetchMyInfo = useCallback(
     async (showNotice: boolean = false) => {
+      if (!isLogin) return;
+
       try {
         const { code, message } = await RabbitFetch<
           GeneralResponse<ContestMyInfo>
@@ -117,10 +147,12 @@ const DetailContest = () => {
         setInfoRefreshTime(new Date());
       }
     },
-    [cid]
+    [cid, isLogin]
   );
   const fetchScoreBoard = useCallback(
     async (showNotice: boolean = false) => {
+      if (!isLogin) return;
+
       try {
         const { code, message } = await RabbitFetch<
           GeneralResponse<ScoreBoardResponse>
@@ -148,10 +180,12 @@ const DetailContest = () => {
         setScoreboardRefreshTime(new Date());
       }
     },
-    [cid, scoreboardPage]
+    [cid, scoreboardPage, isLogin]
   );
   const fetchClarifyList = useCallback(
     async (showNotice: boolean = false) => {
+      if (!isLogin) return;
+
       try {
         const { code, message } = await RabbitFetch<
           GeneralResponse<Array<ContestClarify<Date>>>
@@ -176,10 +210,12 @@ const DetailContest = () => {
         setClarifyRefreshTime(new Date());
       }
     },
-    [cid]
+    [cid, isLogin]
   );
   const fetchProblems = useCallback(
     async (showNotice: boolean = false) => {
+      if (!isLogin) return;
+
       try {
         const { code, message } = await RabbitFetch<
           GeneralResponse<Array<ContestQuestion>>
@@ -206,10 +242,12 @@ const DetailContest = () => {
         setQuestionRefreshTime(new Date());
       }
     },
-    [cid]
+    [cid, isLogin]
   );
   const fetchSubmissionList = useCallback(
     async (showNotice: boolean = false) => {
+      if (!isLogin) return;
+
       try {
         const { code, message } = await RabbitFetch<
           GeneralResponse<Array<ContestSubmission>>
@@ -230,7 +268,124 @@ const DetailContest = () => {
         setSubmissionRefreshTime(new Date());
       }
     },
-    [cid]
+    [cid, isLogin]
+  );
+  const connectContestSocket = useCallback(() => {
+    if (!isLogin || !myInfo.registered) return;
+
+    contestWebsocket.current = new WebSocket(
+      API_URL.CONTEST.SOCKET(cid.toString(), uid.toString())
+    );
+    contestWebsocket.current.onopen = () => {
+      setSocketStatus(true);
+      console.log("contest ws opened");
+    };
+    contestWebsocket.current.onmessage = (e) => {
+      const { type, message } = JSON.parse(e.data) as WebsocketMessage;
+      if (type === "clarify") {
+        setClarifyList((prevClarifyList) => [
+          ...prevClarifyList,
+          {
+            cid: +cid,
+            created_at: new Date().toLocaleString(),
+            message,
+          },
+        ]);
+
+        emitSnackbar(`[Clarify] ${message}`, { variant: "warning" });
+      }
+    };
+    contestWebsocket.current.onerror = (e) => {
+      console.error("ws error", e);
+      setSocketStatus(false);
+      emitSnackbar("WebSocket connect failed!", { variant: "error" });
+    };
+  }, [isLogin, myInfo.registered, cid, uid]);
+
+  useEffect(() => {
+    const cleanFunctions: Array<() => any> = [];
+    fetchContestInfo().then((currentContest) => {
+      if (currentContest.status === 0 && isAdmin) {
+        fetchProblems();
+      }
+
+      if (currentContest.status > 0) {
+        fetchMyInfo();
+        fetchScoreBoard();
+        fetchClarifyList();
+        fetchProblems();
+        fetchSubmissionList();
+      }
+
+      if (currentContest.status === 1) {
+        if (myInfo.registered) {
+          connectContestSocket();
+          const handleFetchScheduledScoreboard = setInterval(() => {
+            fetchScoreBoard();
+          }, 10 * 60 * 1000);
+          cleanFunctions.push(() => {
+            clearInterval(handleFetchScheduledScoreboard);
+          });
+        }
+
+        const handleRenderRemainTime = setInterval(() => {
+          renderRemainTime();
+        }, 500);
+        cleanFunctions.push(() => {
+          clearInterval(handleRenderRemainTime);
+        });
+      }
+
+      setScoreboardPageCount(currentContest.participants);
+    });
+
+    return () => {
+      cleanFunctions.forEach((fn) => fn());
+    };
+  }, [
+    isAdmin,
+    fetchContestInfo,
+    fetchProblems,
+    fetchMyInfo,
+    fetchScoreBoard,
+    fetchClarifyList,
+    fetchSubmissionList,
+    renderRemainTime,
+    connectContestSocket,
+    myInfo.registered,
+  ]);
+  useEffect(() => {
+    return () => {
+      console.log("will dispose contest ws connection.");
+      contestWebsocket.current?.close();
+    };
+  }, [contestWebsocket]);
+
+  const handleTabChange = useCallback(
+    (_: React.ChangeEvent<{}>, newValue: number) => {
+      if (newValue === 3) {
+        setClarifyRead(clarifyList.length);
+      }
+      setTabIndex(newValue);
+    },
+    [clarifyList]
+  );
+  const handleRegister = useCallback(
+    (action: "reg" | "cancel") => async () => {
+      const { code, message } = await RabbitFetch<
+        GeneralResponse<ContestMyInfo>
+      >(API_URL.CONTEST.POST_REGISTER(cid, action), {
+        method: "GET",
+      });
+
+      if (code === 200) {
+        emitSnackbar("Operate Successful!", { variant: "success" });
+        fetchMyInfo();
+      } else {
+        emitSnackbar(message, { variant: "error" });
+      }
+    },
+    [cid, fetchMyInfo]
   );
 
   const ScoreboardComponent = () => {
@@ -370,7 +525,7 @@ const DetailContest = () => {
           </AccordionSummary>
           <AccordionDetails>
             <div className={classes.problemDetailContainer}>
-              <DescriptionComponent question={item} />
+              <DescriptionComponent question={item} isContest={true} />
               <h3>Submit</h3>
               <SubmitComponent tid={item.tid.toString()} />
             </div>

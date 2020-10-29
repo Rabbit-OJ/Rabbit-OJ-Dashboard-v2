@@ -50,7 +50,7 @@ const UserRegister = () => {
       return;
     }
 
-    const resp = await RabbitFetch<GeneralResponse>(
+    const { code, message } = await RabbitFetch<GeneralResponse>(
       API_URL.USER.POST_REGISTER,
       {
         method: "POST",
@@ -61,6 +61,13 @@ const UserRegister = () => {
         },
       }
     );
+
+    if (code === 200) {
+      history.push("/user/login");
+      emitSnackbar("Register success!", { variant: "success" });
+    } else {
+      emitSnackbar(message, { variant: "error" });
+    }
   };
 
   return (
