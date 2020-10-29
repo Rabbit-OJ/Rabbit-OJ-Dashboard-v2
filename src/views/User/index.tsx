@@ -1,10 +1,10 @@
 import React from "react";
+import { Route, Switch, Redirect } from "react-router-dom";
 
 import UserLogin from "./Login";
 import UserRegister from "./Register";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
-import { Route, Switch, Redirect } from "react-router-dom";
 import Paper from "@material-ui/core/Paper";
 
 const useStyles = makeStyles(() =>

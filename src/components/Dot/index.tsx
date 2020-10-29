@@ -1,8 +1,9 @@
 import React from "react";
+import clsx from "clsx";
 
 import { createStyles, makeStyles } from "@material-ui/core/styles";
+
 import { JudgeResult } from "../../model/submission";
-import clsx from "clsx";
 import { displayMemory } from "../../utils/display";
 
 const useStyles = makeStyles(() =>
