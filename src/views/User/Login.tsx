@@ -62,12 +62,16 @@ const UserLogin = () => {
         className={classes.fullWidth}
         placeholder="Username"
         name="username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
       />
       <TextField
         className={classes.fullWidth}
         placeholder="Password"
         type="password"
         name="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
       />
       <div className={classes.btnContainer}>
         <Button

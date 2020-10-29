@@ -9,6 +9,7 @@ import RabbitFetch from "../../utils/fetch";
 import API_URL from "../../utils/url";
 import passwordMD5 from "../../utils/password";
 import { GeneralResponse } from "../../model/general-response";
+import { emitSnackbar } from "../../data/emitter";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -37,12 +38,18 @@ const UserRegister = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordRepeat, setPasswordRepeat] = useState("");
   const [email, setEmail] = useState("");
 
   const handleLogin = () => {
     history.push("/user/login");
   };
   const handleRegister = async () => {
+    if (password != passwordRepeat) {
+      emitSnackbar("Password inconsistent.", { variant: "error" });
+      return;
+    }
+
     const response = await RabbitFetch<GeneralResponse>(
       API_URL.USER.POST_REGISTER,
       {
@@ -63,23 +70,31 @@ const UserRegister = () => {
         className={classes.fullWidth}
         placeholder="Username"
         name="username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
       />
       <TextField
         className={classes.fullWidth}
         placeholder="Email"
         name="mail"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
       />
       <TextField
         className={classes.fullWidth}
         placeholder="Password"
         type="password"
         name="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
       />
       <TextField
         className={classes.fullWidth}
         placeholder="Repeat Password"
         type="password"
         name="password_repeat"
+        value={passwordRepeat}
+        onChange={(e) => setPasswordRepeat(e.target.value)}
       />
       <div className={classes.btnContainer}>
         <Button

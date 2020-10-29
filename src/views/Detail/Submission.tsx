@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import clsx from "clsx";
 
 import Paper from "@material-ui/core/Paper";
@@ -12,6 +12,9 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { Submission } from "../../model/submission";
 import API_URL from "../../utils/url";
 import SubmissionDotComponent from "../../components/Dot";
+import RabbitFetch from "../../utils/fetch";
+import { displayMemory } from "../../utils/display";
+import { GeneralResponse } from "../../model/general-response";
 
 const DEFAULT_SUBMISSION: Submission = {
   sid: 0,
@@ -102,7 +105,7 @@ const SubmissionDetailComponent = ({
         <span className={clsx(...statusClassName)}>{submission.status}</span>
       </div>
       <div>Language: {submission.language}</div>
-      <div>Space Used: {submission.space_used}</div>
+      <div>Space Used: {displayMemory(submission.space_used)}</div>
       <div>Time Used: {submission.time_used}ms</div>
       <div>Submit Time: {submission.created_at.toLocaleString()}</div>
       <h3>Test Cases Info</h3>
@@ -116,7 +119,8 @@ const SubmissionDetailComponent = ({
 };
 
 interface ICodeComponentProps {
-  submission: Submission;
+  sid: string;
+  codeSegment: string;
 }
 
 const useCodeComponentStyles = makeStyles(() =>
@@ -135,11 +139,11 @@ const useCodeComponentStyles = makeStyles(() =>
   })
 );
 
-const CodeComponent = ({ submission }: ICodeComponentProps) => {
+const CodeComponent = ({ sid, codeSegment }: ICodeComponentProps) => {
   const handleDownload = () => {
     const token = localStorage.getItem("token");
     const tempForm = document.createElement("form");
-    tempForm.action = API_URL.SUBMISSION.POST_CODE(submission.sid.toString());
+    tempForm.action = API_URL.SUBMISSION.POST_CODE(sid);
     tempForm.target = "_blank";
     tempForm.method = "POST";
     tempForm.style.display = "none";
@@ -155,7 +159,6 @@ const CodeComponent = ({ submission }: ICodeComponentProps) => {
   };
 
   const classes = useCodeComponentStyles();
-  const [codeSegment, setCodeSegment] = useState("");
   return (
     <>
       <div className={classes.downloadContainer}>
@@ -187,14 +190,48 @@ const CodeComponent = ({ submission }: ICodeComponentProps) => {
 };
 
 const DetailSubmission = () => {
+  const { sid } = useParams<{ sid: string }>();
   const [tabIndex, setTabIndex] = useState(0);
   const [submission, setSubmission] = useState(DEFAULT_SUBMISSION);
-  const classes = useStyles();
+  const [codeSegment, setCodeSegment] = useState("");
+
+  const fetchCode = useCallback(async () => {
+    const res = await RabbitFetch<string>(
+      API_URL.SUBMISSION.POST_CODE(submission.sid.toString()),
+      {
+        method: "POST",
+        body: `token=${localStorage.getItem("token")}`,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        responseType: "string",
+      }
+    );
+
+    setCodeSegment(res);
+  }, [sid]);
+  const fetchSubmissionInfo = useCallback(async () => {
+    const res = await RabbitFetch<GeneralResponse<Submission>>(
+      API_URL.SUBMISSION.GET_DETAIL(submission.sid.toString()),
+      {
+        method: "GET",
+      }
+    );
+
+    const { message } = res;
+    setSubmission(message);
+  }, [sid]);
+
+  useEffect(() => {
+    fetchCode();
+    fetchSubmissionInfo();
+  }, [sid]);
 
   const handleChange = (_: React.ChangeEvent<{}>, newValue: number) => {
     setTabIndex(newValue);
   };
 
+  const classes = useStyles();
   return (
     <>
       <h1>Submission Status - {submission.question_title}</h1>
@@ -213,7 +250,12 @@ const DetailSubmission = () => {
           {tabIndex === 0 && (
             <SubmissionDetailComponent submission={submission} />
           )}
-          {tabIndex === 1 && <CodeComponent submission={submission} />}
+          {tabIndex === 1 && (
+            <CodeComponent
+              sid={submission.sid.toString()}
+              codeSegment={codeSegment}
+            />
+          )}
         </div>
       </Paper>
     </>
