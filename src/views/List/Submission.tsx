@@ -14,20 +14,6 @@ import { useTypedSelector } from "../../data";
 import { calculatePageCount } from "../../utils/page";
 import { emitSnackbar } from "../../data/emitter";
 
-const LIST_DEMO_DATA: SubmissionLite[] = [
-  {
-    sid: 1,
-    uid: 1,
-    tid: 1,
-    question_title: "A + B Problem",
-    status: "AC",
-    language: "C++ 17",
-    time_used: 1,
-    space_used: 1,
-    created_at: new Date(),
-  },
-];
-
 const useStyles = makeStyles(() =>
   createStyles({
     main: {
@@ -40,7 +26,7 @@ const useStyles = makeStyles(() =>
 const SubmissionListView = () => {
   const { page } = useParams<{ page: string }>();
   const [pageCount, setPageCount] = useState(1);
-  const [list, setList] = useState(LIST_DEMO_DATA);
+  const [list, setList] = useState<SubmissionLite[]>([]);
 
   const { isLogin, uid } = useTypedSelector((state) => ({
     isLogin: state.user.isLogin,

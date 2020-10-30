@@ -32,8 +32,6 @@ import {
   DEFAULT_PROBLEM,
   DEFAULT_SCOREBOARD_LIST,
   DEFAULT_SUBMISSION_LIST,
-  INITIAL_PROBLEM_MAP,
-  INITIAL_SUNMISSION_CASE_INFO_MAP,
 } from "./Contest.data";
 import { emitSnackbar } from "../../data/emitter";
 import RabbitFetch from "../../utils/fetch";
@@ -69,7 +67,7 @@ const DetailContest = () => {
   const [clarifyRead, setClarifyRead] = useState(0);
   const [submissionList, setSubmissionList] = useState(DEFAULT_SUBMISSION_LIST);
   const [submissionCaseInfo, setSubmissionCaseInfo] = useState(
-    INITIAL_SUNMISSION_CASE_INFO_MAP()
+    new Map<number, Submission>()
   );
   const [problemList, setProblemList] = useState(DEFAULT_PROBLEM);
   const [scoreboardBlocked, setScoreboardBlocked] = useState(false);
@@ -85,7 +83,9 @@ const DetailContest = () => {
   );
   const [clarifyRefreshTime, setClarifyRefreshTime] = useState(new Date());
   const [infoRefreshTime, setInfoRefreshTime] = useState(new Date());
-  const [problemMap, setProblemMap] = useState(INITIAL_PROBLEM_MAP());
+  const [problemMap, setProblemMap] = useState(
+    new Map<number, ContestQuestionItem>()
+  );
   const { isLogin, isAdmin, uid } = useTypedSelector((state) => ({
     isLogin: state.user.isLogin,
     isAdmin: state.user.isAdmin,
@@ -140,7 +140,8 @@ const DetailContest = () => {
           emitSnackbar(message, { variant: "error" });
         }
 
-        if (showNotice) emitSnackbar("Personal info updated");
+        if (showNotice)
+          emitSnackbar("Personal info updated", { variant: "info" });
       } catch (e) {
         console.error(e);
       } finally {
@@ -173,7 +174,7 @@ const DetailContest = () => {
           emitSnackbar(message, { variant: "error" });
         }
 
-        if (showNotice) emitSnackbar("Scoreboard updated");
+        if (showNotice) emitSnackbar("Scoreboard updated", { variant: "info" });
       } catch (e) {
         console.error(e);
       } finally {
@@ -203,7 +204,8 @@ const DetailContest = () => {
         } else {
           emitSnackbar(message, { variant: "error" });
         }
-        if (showNotice) emitSnackbar("Clarification updated");
+        if (showNotice)
+          emitSnackbar("Clarification updated", { variant: "info" });
       } catch (e) {
         console.error(e);
       } finally {
@@ -235,7 +237,8 @@ const DetailContest = () => {
           emitSnackbar(message, { variant: "error" });
         }
 
-        if (showNotice) emitSnackbar("Problem list updated");
+        if (showNotice)
+          emitSnackbar("Problem list updated", { variant: "info" });
       } catch (e) {
         console.error(e);
       } finally {
@@ -261,7 +264,8 @@ const DetailContest = () => {
           emitSnackbar(message, { variant: "error" });
         }
 
-        if (showNotice) emitSnackbar("Submission list updated");
+        if (showNotice)
+          emitSnackbar("Submission list updated", { variant: "info" });
       } catch (e) {
         console.error(e);
       } finally {
@@ -292,7 +296,7 @@ const DetailContest = () => {
           },
         ]);
 
-        emitSnackbar(`[Clarify] ${message}`, { variant: "warning" });
+        emitSnackbar(`[Clarify] ${message}`, { variant: "info" });
       }
     };
     contestWebsocket.current.onerror = (e) => {

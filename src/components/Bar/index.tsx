@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useHistory } from "react-router";
 import { useDispatch } from "react-redux";
 import { OptionsObject, SnackbarMessage, useSnackbar } from "notistack";
@@ -26,9 +26,19 @@ import EmojiEventsIcon from "@material-ui/icons/EmojiEvents";
 import BackupIcon from "@material-ui/icons/Backup";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 
-import { loadingDec, loadingInc, logout } from "../../data/actions";
+import {
+  languageSet,
+  loadingDec,
+  loadingInc,
+  logout,
+} from "../../data/actions";
 import { useTypedSelector } from "../../data";
-import { loadingEmitter, snackbarEmitter } from "../../data/emitter";
+import {
+  emitSnackbar,
+  loadingEmitter,
+  snackbarEmitter,
+} from "../../data/emitter";
+import { fetchLanguageList } from "../../data/language";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -59,7 +69,6 @@ const Bar = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
-    console.log(1);
     const loadingEvent = (arg: -1 | 1) => {
       if (arg === -1) {
         dispatch(loadingDec());
@@ -82,6 +91,15 @@ const Bar = () => {
       snackbarEmitter.removeListener("data", snackbarEvent);
     };
   }, [dispatch, enqueueSnackbar]);
+
+  const dispatchLanguage = useCallback(async () => {
+    const languageList = await fetchLanguageList();
+    dispatch(languageSet(languageList));
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatchLanguage();
+  }, [dispatchLanguage]);
 
   const toggleDrawer = (open: boolean) => (
     event: React.KeyboardEvent | React.MouseEvent
@@ -122,7 +140,12 @@ const Bar = () => {
             <ListItemIcon>
               <ForumIcon />
             </ListItemIcon>
-            <ListItemText primary="Community" />
+            <ListItemText
+              primary="Community"
+              onClick={() => {
+                emitSnackbar("Comming in the future", { variant: "info" });
+              }}
+            />
           </ListItem>
         </List>
         <Divider />

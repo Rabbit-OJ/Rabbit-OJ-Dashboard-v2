@@ -21,5 +21,3 @@ export const loadingReducer = (
   }
   return state;
 };
-
-// export const loadingStore = createStore(loadingReducer);

@@ -8,17 +8,12 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 
-import { LanguageResponse } from "../../model/language";
+import { useTypedSelector } from "../../data";
 
 interface IProps {
   tid: string;
   onSubmit?: (args: { language: string; code: string }) => any;
 }
-
-const DEFAULT_LANGUAGE: LanguageResponse = [
-  { name: "C++/17", value: "cpp17" },
-  { name: "C++/20", value: "cpp20" },
-];
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -39,7 +34,11 @@ const useStyles = makeStyles(() =>
 
 const SubmitComponent = ({ tid, onSubmit }: IProps) => {
   const classes = useStyles();
-  const [language, setLanguage] = useState(DEFAULT_LANGUAGE[0].value);
+  const { languages } = useTypedSelector((state) => ({
+    languages: state.language,
+  }));
+
+  const [language, setLanguage] = useState(languages[0]?.value ?? "");
   const [code, setCode] = useState("");
 
   useEffect(() => {
@@ -77,7 +76,7 @@ const SubmitComponent = ({ tid, onSubmit }: IProps) => {
           onChange={handleLanguageChange}
           className={classes.selectContainter}
         >
-          {DEFAULT_LANGUAGE.map((item, idx) => (
+          {languages.map((item, idx) => (
             <MenuItem key={idx} value={item.value}>
               {item.name}
             </MenuItem>

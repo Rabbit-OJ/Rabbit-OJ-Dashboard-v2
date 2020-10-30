@@ -1,12 +1,9 @@
 import { Contest } from "../../model/contest";
 import { ContestClarify } from "../../model/contest-clarify";
 import { ContestMyInfo } from "../../model/contest-my-info";
-import {
-  ContestQuestion,
-  ContestQuestionItem,
-} from "../../model/contest-question";
+import { ContestQuestion } from "../../model/contest-question";
 import { ScoreBoard } from "../../model/score-board";
-import { ContestSubmission, Submission } from "../../model/submission";
+import { ContestSubmission } from "../../model/submission";
 
 export const DEFAULT_CONTEST: Contest<string> = {
   name: "Loading...",
@@ -29,138 +26,7 @@ export const DEFAULT_MY_INFO: ContestMyInfo = {
   registered: false,
 };
 
-export const DEFAULT_CLARIFY_LIST: Array<ContestClarify<string>> = [
-  {
-    cid: 1,
-    created_at: new Date().toString(),
-    message: "233",
-  },
-  {
-    cid: 2,
-    created_at: new Date().toString(),
-    message: "455",
-  },
-];
-
-export const DEFAULT_SUBMISSION_LIST: Array<ContestSubmission<string>> = [
-  {
-    sid: 1,
-    cid: 1,
-    uid: 1,
-    tid: 1,
-    status: 1,
-    total_time: 12,
-    created_at: new Date().toString(),
-  },
-  {
-    sid: 2,
-    cid: 1,
-    uid: 1,
-    tid: 1,
-    status: 1,
-    total_time: 12,
-    created_at: new Date().toString(),
-  },
-];
-
-export const DEFAULT_PROBLEM: Array<ContestQuestion> = [
-  {
-    cid: 1,
-    tid: 1,
-    id: 1,
-    score: 3,
-    uid: 1,
-    subject: "A + B Problem",
-    difficulty: 1,
-    time_limit: 1000,
-    space_limit: 128,
-    created_at: new Date().toString(),
-    content: "A + B Problem",
-    sample: [
-      {
-        in: "1 2",
-        out: "3",
-      },
-    ],
-    attempt: 1,
-    accept: 1,
-  },
-];
-
-export const DEFAULT_SCOREBOARD_LIST: Array<ScoreBoard> = [
-  {
-    uid: 1,
-    username: "aaa",
-    score: 1,
-    total_time: 26,
-    rank: 1,
-    progress: [
-      {
-        status: 1,
-        bug: 2,
-        total_time: 0,
-      },
-      {
-        status: 1,
-        bug: 2,
-        total_time: 15,
-      },
-    ],
-  },
-  {
-    uid: 2,
-    username: "bbb",
-    score: 1,
-    total_time: 55,
-    rank: 2,
-    progress: [
-      {
-        status: -1,
-        bug: 2,
-        total_time: 12,
-      },
-      {
-        status: 1,
-        bug: 2,
-        total_time: 15,
-      },
-    ],
-  },
-];
-
-export const INITIAL_SUNMISSION_CASE_INFO_MAP = () => {
-  const initialmap = new Map<number, Submission>();
-  initialmap.set(1, {
-    sid: 1,
-    uid: 1,
-    tid: 1,
-    question_title: "A + B Problem",
-    status: "AC",
-    language: "cpp",
-    time_used: 1,
-    space_used: 12,
-    created_at: new Date(),
-    judge: [
-      {
-        status: "AC",
-        time_used: 1,
-        space_used: 1,
-      },
-      {
-        status: "AC",
-        time_used: 1,
-        space_used: 1,
-      },
-    ],
-  });
-  return initialmap;
-};
-
-export const INITIAL_PROBLEM_MAP = () => {
-  const initialmap = new Map<number, ContestQuestionItem>();
-  initialmap.set(1, {
-    subject: "A + B Problem",
-    id: 0,
-  });
-  return initialmap;
-};
+export const DEFAULT_CLARIFY_LIST: Array<ContestClarify<string>> = [];
+export const DEFAULT_SUBMISSION_LIST: Array<ContestSubmission<string>> = [];
+export const DEFAULT_PROBLEM: Array<ContestQuestion> = [];
+export const DEFAULT_SCOREBOARD_LIST: Array<ScoreBoard> = [];

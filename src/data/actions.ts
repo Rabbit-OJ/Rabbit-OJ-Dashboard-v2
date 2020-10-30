@@ -1,3 +1,5 @@
+import { Language } from "../model/language";
+
 export const LOGIN = "LOGIN";
 export type ILOGIN = typeof LOGIN;
 export interface Login {
@@ -49,5 +51,29 @@ export interface LoadingDecrement {
 export const loadingDec = (): LoadingDecrement => {
   return {
     type: LOADING_DEC,
+  };
+};
+
+export const LANGUAGE_SET = "LANGUAGE_SET";
+export type ILANGUAGE_SET = typeof LANGUAGE_SET;
+export interface LanguageSet {
+  type: ILANGUAGE_SET;
+  data: Language[];
+}
+export const languageSet = (data: Language[]): LanguageSet => {
+  return {
+    type: LANGUAGE_SET,
+    data,
+  };
+};
+
+export const LANGUAGE_CLEAR = "LANGUAGE_CLEAR";
+export type ILANGUAGE_CLEAR = typeof LANGUAGE_CLEAR;
+export interface LanguageClear {
+  type: ILANGUAGE_CLEAR;
+}
+export const languageClear = (): LanguageClear => {
+  return {
+    type: LANGUAGE_CLEAR,
   };
 };

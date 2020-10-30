@@ -21,30 +21,18 @@ import { emitSnackbar } from "../../data/emitter";
 const DEFAULT_QUESTION: QuestionDetail = {
   tid: 1,
   hide: false,
-  subject: "A + B Problem",
-  content: "Output A + B value.",
-  sample: [{ in: "1 2", out: "3" }],
+  subject: "Loading ...",
+  content: "",
+  sample: [],
   attempt: 0,
   accept: 0,
-  time_limit: 1000,
-  space_limit: 128,
-  created_at: "2020/01/01",
+  time_limit: 0,
+  space_limit: 0,
+  created_at: "",
   difficulty: 1,
 };
 
-const SUBMISSION_DEMO_DATA: SubmissionLite[] = [
-  {
-    sid: 1,
-    uid: 1,
-    tid: 1,
-    question_title: "A + B Problem",
-    status: "AC",
-    language: "C++ 17",
-    time_used: 1,
-    space_used: 1,
-    created_at: new Date(),
-  },
-];
+const SUBMISSION_DEMO_DATA: SubmissionLite[] = [];
 
 const useStyles = makeStyles(() =>
   createStyles({

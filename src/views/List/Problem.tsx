@@ -12,20 +12,6 @@ import API_URL from "../../utils/url";
 import { calculatePageCount } from "../../utils/page";
 import { emitSnackbar } from "../../data/emitter";
 
-const LIST_DEMO_DATA: QuestionItem[] = [
-  {
-    tid: 1,
-    uid: 1,
-    subject: "A + B Problem",
-    attempt: 0,
-    accept: 0,
-    difficulty: 1,
-    time_limit: 1000,
-    space_limit: 128,
-    created_at: new Date(),
-  },
-];
-
 const useStyles = makeStyles(() =>
   createStyles({
     main: {
@@ -38,7 +24,7 @@ const useStyles = makeStyles(() =>
 const ProblemListView = () => {
   const { page } = useParams<{ page: string }>();
   const [pageCount, setPageCount] = useState(1);
-  const [list, setList] = useState(LIST_DEMO_DATA);
+  const [list, setList] = useState<QuestionItem[]>([]);
 
   const fetchList = useCallback(async () => {
     const { code, message } = await RabbitFetch<

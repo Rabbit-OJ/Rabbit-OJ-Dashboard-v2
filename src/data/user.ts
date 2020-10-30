@@ -29,4 +29,3 @@ export const userReducer = (state = initState, action: Action): UserStore => {
   return state;
 };
 
-// export const userStore = createStore(userReducer);

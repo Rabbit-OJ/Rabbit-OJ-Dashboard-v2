@@ -21,24 +21,13 @@ const DEFAULT_SUBMISSION: Submission = {
   sid: 0,
   uid: 0,
   tid: 0,
-  question_title: "A + B Problem",
+  question_title: "Loading ...",
   status: "AC",
-  language: "php",
+  language: "cpp",
   time_used: 0,
   space_used: 0,
   created_at: new Date(),
-  judge: [
-    {
-      status: "AC",
-      time_used: 1,
-      space_used: 1,
-    },
-    {
-      status: "AC",
-      time_used: 1,
-      space_used: 1,
-    },
-  ],
+  judge: [],
 };
 
 const useStyles = makeStyles(() =>

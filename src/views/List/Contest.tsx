@@ -13,21 +13,6 @@ import API_URL from "../../utils/url";
 import { calculatePageCount } from "../../utils/page";
 import { emitSnackbar } from "../../data/emitter";
 
-const LIST_DEMO_DATA: Contest[] = [
-  {
-    cid: 1,
-    name: "Contest 1",
-    uid: 1,
-    start_time: new Date(),
-    block_time: new Date(),
-    end_time: new Date(),
-    status: 0,
-    participants: 0,
-    penalty: 300,
-    count: 1,
-  },
-];
-
 const useStyles = makeStyles(() =>
   createStyles({
     main: {
@@ -40,7 +25,7 @@ const useStyles = makeStyles(() =>
 const ContestListView = () => {
   const { page } = useParams<{ page: string }>();
   const [pageCount, setPageCount] = useState(1);
-  const [list, setList] = useState(LIST_DEMO_DATA);
+  const [list, setList] = useState<Contest[]>([]);
 
   const fetchList = useCallback(async () => {
     const { code, message } = await RabbitFetch<
