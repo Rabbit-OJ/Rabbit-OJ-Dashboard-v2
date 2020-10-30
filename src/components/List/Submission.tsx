@@ -56,7 +56,7 @@ const SubmissionComponent = ({ item }: ISubmissionComponentProps) => {
   }
 
   return (
-    <div>
+    <div className="list-container">
       <div>
         <Link to={url} className="router-link">
           {item.question_title}
@@ -82,18 +82,20 @@ const SubmissionListComponent = ({
   return (
     <>
       {list.map((item) => (
-        <SubmissionComponent key={item.tid} item={item} />
+        <SubmissionComponent key={item.sid} item={item} />
       ))}
-      <Pagination
-        className="pagination"
-        count={pageCount}
-        page={page}
-        variant="outlined"
-        color="primary"
-        onChange={(_, newPage) => {
-          onPageChange && onPageChange(newPage);
-        }}
-      />
+      {pageCount >= 2 && (
+        <Pagination
+          className="pagination"
+          count={pageCount}
+          page={page}
+          variant="outlined"
+          color="primary"
+          onChange={(_, newPage) => {
+            onPageChange && onPageChange(newPage);
+          }}
+        />
+      )}
     </>
   );
 };

@@ -196,7 +196,7 @@ const DetailSubmission = () => {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        responseType: "string",
+        responseType: "text",
       }
     );
 

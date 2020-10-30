@@ -42,7 +42,7 @@ const ContestComponent = ({ item }: IContestComponentProps) => {
   const url = `/detail/contest/${item.cid}`;
 
   return (
-    <div>
+    <div className="list-container">
       <div>
         <Link to={url} className="router-link">
           {item.name}
@@ -64,16 +64,18 @@ const ContestListComponent = ({
       {list.map((item) => (
         <ContestComponent key={item.cid} item={item} />
       ))}
-      <Pagination
-        className="pagination"
-        count={pageCount}
-        page={page}
-        variant="outlined"
-        color="primary"
-        onChange={(_, newPage) => {
-          onPageChange && onPageChange(newPage);
-        }}
-      />
+      {pageCount >= 2 && (
+        <Pagination
+          className="pagination"
+          count={pageCount}
+          page={page}
+          variant="outlined"
+          color="primary"
+          onChange={(_, newPage) => {
+            onPageChange && onPageChange(newPage);
+          }}
+        />
+      )}
     </>
   );
 };

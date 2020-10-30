@@ -17,6 +17,7 @@ import { GeneralResponse } from "../../model/general-response";
 import { SubmissionResponse } from "../../model/submission-response";
 import { calculatePageCount } from "../../utils/page";
 import { emitSnackbar } from "../../data/emitter";
+import { useTypedSelector } from "../../data";
 
 const DEFAULT_QUESTION: QuestionDetail = {
   tid: 1,
@@ -51,8 +52,12 @@ const DetailProblem = () => {
   const [question, setQuestion] = useState(DEFAULT_QUESTION);
   const [submissionData, setSubmissionData] = useState(SUBMISSION_DEMO_DATA);
   const [submissionListPage, setSubmissionListPage] = useState(1);
-  const [submissionListPageCount, setSubmissionListPageCount] = useState(10);
+  const [submissionListPageCount, setSubmissionListPageCount] = useState(1);
   const history = useHistory();
+
+  const { isLogin } = useTypedSelector((state) => ({
+    isLogin: state.user.isLogin,
+  }));
 
   const fetchProblemInfo = useCallback(async () => {
     const { code, message } = await RabbitFetch<
@@ -67,7 +72,10 @@ const DetailProblem = () => {
       emitSnackbar(message, { variant: "error" });
     }
   }, [tid]);
+
   const fetchSubmissionRecord = useCallback(async () => {
+    if (!isLogin) return;
+
     const { code, message } = await RabbitFetch<
       GeneralResponse<SubmissionResponse>
     >(API_URL.QUESTION.GET_RECORD(tid, submissionListPage.toString()), {
@@ -81,7 +89,7 @@ const DetailProblem = () => {
     } else {
       emitSnackbar(message, { variant: "error" });
     }
-  }, [tid, submissionListPage]);
+  }, [tid, submissionListPage, isLogin]);
   const handleSubmit = useCallback(
     async ({ code, language }: { code: string; language: string }) => {
       if (language === "") {
@@ -139,8 +147,8 @@ const DetailProblem = () => {
           centered
         >
           <Tab label="Detail" />
-          <Tab label="Submit" />
-          <Tab label="Submission" />
+          {isLogin && <Tab label="Submit" />}
+          {isLogin && <Tab label="Submission" />}
           {/* <Tab label="Admin" /> */}
         </Tabs>
         <div className={classes.bodyContainer}>

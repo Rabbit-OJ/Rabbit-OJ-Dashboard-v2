@@ -14,3 +14,6 @@
 .router-link:hover {
   color: rgb(83, 169, 255);
 }
+.list-container {
+  margin: 12px 0;
+}

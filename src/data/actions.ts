@@ -8,11 +8,12 @@ export interface Login {
   username: string;
   uid: number;
 }
-export const login = (
-  uid: number,
-  username: string,
-  isAdmin: boolean
-): Login => {
+export const login = (args: {
+  uid: number;
+  username: string;
+  isAdmin: boolean;
+}): Login => {
+  const { uid, username, isAdmin } = args;
   return {
     type: LOGIN,
     uid,

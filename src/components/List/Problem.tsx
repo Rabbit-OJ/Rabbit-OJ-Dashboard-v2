@@ -32,7 +32,7 @@ const ProblemComponent = ({ item }: IProblemComponentProps) => {
   const url = `/detail/problem/${item.tid}`;
 
   return (
-    <div>
+    <div className="list-container">
       <div>
         <Link to={url} className="router-link">
           {item.subject}
@@ -57,16 +57,18 @@ const ProblemListComponent = ({
       {list.map((item) => (
         <ProblemComponent key={item.tid} item={item} />
       ))}
-      <Pagination
-        className="pagination"
-        count={pageCount}
-        page={page}
-        variant="outlined"
-        color="primary"
-        onChange={(_, newPage) => {
-          onPageChange && onPageChange(newPage);
-        }}
-      />
+      {pageCount >= 2 && (
+        <Pagination
+          className="pagination"
+          count={pageCount}
+          page={page}
+          variant="outlined"
+          color="primary"
+          onChange={(_, newPage) => {
+            onPageChange && onPageChange(newPage);
+          }}
+        />
+      )}
     </>
   );
 };

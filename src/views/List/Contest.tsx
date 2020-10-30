@@ -17,7 +17,7 @@ const useStyles = makeStyles(() =>
   createStyles({
     main: {
       margin: "24px 0",
-      padding: "24px 12px 12px 12px",
+      padding: "24px 12px",
     },
   })
 );
@@ -32,6 +32,7 @@ const ContestListView = () => {
       GeneralResponse<GeneralListResponse<Contest>>
     >(API_URL.CONTEST.GET_LIST(page));
 
+    console.log(message)
     if (code === 200) {
       setList(message.list);
       setPageCount(calculatePageCount(message.count));

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useHistory } from "react-router";
 
 import TextField from "@material-ui/core/TextField";
@@ -11,6 +11,8 @@ import API_URL from "../../utils/url";
 import { GeneralResponse } from "../../model/general-response";
 import { LoginResponse } from "../../model/login-response";
 import { emitSnackbar } from "../../data/emitter";
+import { useDispatch } from "react-redux";
+import { login } from "../../data/actions";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -39,8 +41,9 @@ const UserLogin = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
 
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
     const { code, message } = await RabbitFetch<GeneralResponse<LoginResponse>>(
       API_URL.USER.POST_LOGIN,
       {
@@ -54,14 +57,24 @@ const UserLogin = () => {
 
     if (code === 200) {
       history.push("/list/problem/1");
+      dispatch(login({ ...message }));
+      localStorage.setItem("token", message.token);
       emitSnackbar("Login success!", { variant: "success" });
     } else {
       emitSnackbar(message, { variant: "error" });
     }
-  };
-  const handleRegister = () => {
+  }, [history, dispatch, username, password]);
+  const handleRegister = useCallback(() => {
     history.push("/user/register");
-  };
+  }, [history]);
+  const handlePasswordKeydown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Enter") {
+        handleLogin();
+      }
+    },
+    [handleLogin]
+  );
 
   return (
     <form>
@@ -80,6 +93,7 @@ const UserLogin = () => {
         name="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        onKeyDown={handlePasswordKeydown}
       />
       <div className={classes.btnContainer}>
         <Button

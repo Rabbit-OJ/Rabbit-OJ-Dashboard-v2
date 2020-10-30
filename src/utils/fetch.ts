@@ -1,64 +1,50 @@
-import { loadingDec, loadingInc } from "../data/actions";
-import { emitSnackbar } from "../data/emitter";
+import axios, { ResponseType } from "axios";
+
+import { emitLoadingDec, emitLoadingInc, emitSnackbar } from "../data/emitter";
 
 export interface RabbitFetchParams {
-  dispatcher?: (action: any) => void;
   method: "GET" | "POST" | "PUT" | "DELETE" | "OPTIONS";
   body?: Object | string;
   headers?: { [key: string]: string };
-  responseType?: "string" | "json" | "buffer" | "blob";
+  responseType?: ResponseType;
+  suppressErrorMessage?: boolean;
 }
 
 const RabbitFetch = async <T>(
-  input: RequestInfo,
-  init?: RabbitFetchParams
+  url: string,
+  config: RabbitFetchParams = { method: "GET" }
 ): Promise<T> => {
-  const dispatcher = init?.dispatcher;
-  const responseType: "string" | "json" | "buffer" | "blob" =
-    init?.responseType ?? "json";
+  const responseType: ResponseType = config.responseType ?? "json";
 
   try {
-    dispatcher && dispatcher(loadingInc());
-
-    const requestInit: RequestInit = {
-      method: init?.method ?? "GET",
-      headers: init?.headers ?? {},
-    };
-
-    if (init?.body) {
-      const body = init?.body;
-      if (typeof body === "string") {
-        requestInit.body = body;
-      } else {
-        requestInit.body = JSON.stringify(body);
-      }
-    }
+    emitLoadingInc();
 
     const token = localStorage.getItem("token");
+    let headers: { [key: string]: string } = config.headers ?? {};
+
     if (token) {
-      requestInit.headers = {
-        ...requestInit.headers,
-        token,
+      headers = {
+        ...headers,
+        Authorization: token,
       };
     }
 
-    const res = await fetch(input, requestInit);
-
-    if (responseType === "json") {
-      return (await res.json()) as T;
-    } else if (responseType === "string") {
-      return ((await res.text()) as any) as T;
-    } else if (responseType === "buffer") {
-      return ((await res.arrayBuffer()) as any) as T;
-    } else {
-      // blob
-      return ((await res.blob()) as any) as T;
-    }
+    const res = await axios({
+      url,
+      method: config.method,
+      data: config.body,
+      headers,
+      responseType: responseType,
+    });
+    return res.data as T;
   } catch (err) {
-    emitSnackbar(err.toString(), { variant: "error" });
+    if (!config.suppressErrorMessage) {
+      emitSnackbar(err.toString(), { variant: "error" });
+    }
+
     throw err;
   } finally {
-    dispatcher && dispatcher(loadingDec());
+    emitLoadingDec();
   }
 };
 

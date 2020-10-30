@@ -18,7 +18,7 @@ const useStyles = makeStyles(() =>
   createStyles({
     main: {
       margin: "24px 0",
-      padding: "24px 12px 12px 12px",
+      padding: "24px 12px",
     },
   })
 );

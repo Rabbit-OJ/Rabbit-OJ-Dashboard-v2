@@ -28,4 +28,3 @@ export const userReducer = (state = initState, action: Action): UserStore => {
   }
   return state;
 };
-

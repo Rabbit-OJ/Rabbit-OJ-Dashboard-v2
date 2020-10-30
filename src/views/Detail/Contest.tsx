@@ -72,7 +72,7 @@ const DetailContest = () => {
   const [problemList, setProblemList] = useState(DEFAULT_PROBLEM);
   const [scoreboardBlocked, setScoreboardBlocked] = useState(false);
   const [scoreboardPage, setScoreboardPage] = useState(1);
-  const [scoreboardPageCount, setScoreboardPageCount] = useState(10);
+  const [scoreboardPageCount, setScoreboardPageCount] = useState(1);
   const [scoreboardList, setScoreboardList] = useState(DEFAULT_SCOREBOARD_LIST);
   const [scoreboardRefreshTime, setScoreboardRefreshTime] = useState(
     new Date()
@@ -527,14 +527,16 @@ const DetailContest = () => {
                 ))}
               </TableBody>
             </Table>
-            <Pagination
-              className="pagination"
-              count={scoreboardPageCount}
-              page={scoreboardPage}
-              variant="outlined"
-              color="primary"
-              onChange={handleScoreboardPageChange}
-            />
+            {scoreboardPageCount >= 2 && (
+              <Pagination
+                className="pagination"
+                count={scoreboardPageCount}
+                page={scoreboardPage}
+                variant="outlined"
+                color="primary"
+                onChange={handleScoreboardPageChange}
+              />
+            )}
           </TableContainer>
         )}
         {scoreboardBlocked && (

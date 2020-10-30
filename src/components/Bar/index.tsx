@@ -30,6 +30,7 @@ import {
   languageSet,
   loadingDec,
   loadingInc,
+  login,
   logout,
 } from "../../data/actions";
 import { useTypedSelector } from "../../data";
@@ -39,6 +40,10 @@ import {
   snackbarEmitter,
 } from "../../data/emitter";
 import { fetchLanguageList } from "../../data/language";
+import { GeneralResponse } from "../../model/general-response";
+import { LoginResponse } from "../../model/login-response";
+import RabbitFetch from "../../utils/fetch";
+import API_URL from "../../utils/url";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -114,6 +119,30 @@ const Bar = () => {
 
     setNavigationOpenState(open);
   };
+
+  const checkLogined = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const { code, message } = await RabbitFetch<GeneralResponse<LoginResponse>>(
+      API_URL.USER.GET_TOKEN,
+      {
+        method: "GET",
+        suppressErrorMessage: true,
+      }
+    );
+
+    if (code === 200) {
+      dispatch(login(message));
+      emitSnackbar(`Welcome back, ${message.username}`, { variant: "info" });
+    } else {
+      console.error(message);
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    checkLogined();
+  }, [checkLogined]);
 
   const NavigationList = () => {
     return (
