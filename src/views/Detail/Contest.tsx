@@ -55,6 +55,12 @@ interface IHandleSubmitProps {
   code: string;
 }
 
+interface IRemainTimeComponentProps {
+  contest: Contest<string>;
+  scoreboardBlocked: boolean;
+  socketStatus: boolean;
+}
+
 const DetailContest = () => {
   const { cid } = useParams<{ cid: string }>();
 
@@ -62,7 +68,6 @@ const DetailContest = () => {
   const [myInfo, setMyInfo] = useState(DEFAULT_MY_INFO);
   const [socketStatus, setSocketStatus] = useState(true);
   const [tabIndex, setTabIndex] = useState(0);
-  const [remainTime, setRemainTime] = useState("");
   const [clarifyList, setClarifyList] = useState(DEFAULT_CLARIFY_LIST);
   const [clarifyRead, setClarifyRead] = useState(0);
   const [submissionList, setSubmissionList] = useState(DEFAULT_SUBMISSION_LIST);
@@ -94,13 +99,6 @@ const DetailContest = () => {
   const contestWebsocket = useRef<null | WebSocket>(null);
   const classes = useDetailContestStyles();
 
-  const renderRemainTime = useCallback(() => {
-    const now = new Date();
-    const endContest = new Date(contest.end_time);
-    setRemainTime(
-      displayRelativeTime(((endContest.getTime() - now.getTime()) / 1000) | 0)
-    );
-  }, [contest]);
   const fetchContestInfo = useCallback(async () => {
     const { code, message } = await RabbitFetch<GeneralResponse<Contest>>(
       API_URL.CONTEST.GET_INFO(cid),
@@ -384,13 +382,6 @@ const DetailContest = () => {
             clearInterval(handleFetchScheduledScoreboard);
           });
         }
-
-        const handleRenderRemainTime = setInterval(() => {
-          renderRemainTime();
-        }, 500);
-        cleanFunctions.push(() => {
-          clearInterval(handleRenderRemainTime);
-        });
       }
 
       setScoreboardPageCount(currentContest.participants);
@@ -407,7 +398,6 @@ const DetailContest = () => {
     fetchScoreBoard,
     fetchClarifyList,
     fetchSubmissionList,
-    renderRemainTime,
     connectContestSocket,
     myInfo.registered,
   ]);
@@ -432,7 +422,7 @@ const DetailContest = () => {
       const { code, message } = await RabbitFetch<
         GeneralResponse<ContestMyInfo>
       >(API_URL.CONTEST.POST_REGISTER(cid, action), {
-        method: "GET",
+        method: "POST",
       });
 
       if (code === 200) {
@@ -511,6 +501,7 @@ const DetailContest = () => {
                         <TableCell
                           align="center"
                           className={clsx(...cellClassNames)}
+                          key={i}
                         >
                           {item.progress[i].bug !== 0 && (
                             <div>🐛{item.progress[i].bug}</div>
@@ -549,7 +540,7 @@ const DetailContest = () => {
             <Button
               variant="text"
               color="primary"
-              onClick={() => fetchScoreBoard}
+              onClick={() => fetchScoreBoard(true)}
             >
               Last Updated: {scoreboardRefreshTime.toLocaleString()}
             </Button>
@@ -663,7 +654,7 @@ const DetailContest = () => {
             <Button
               variant="text"
               color="primary"
-              onClick={() => fetchProblems}
+              onClick={() => fetchProblems(true)}
             >
               Last Updated: {questionRefreshTime.toLocaleString()}
             </Button>
@@ -753,7 +744,7 @@ const DetailContest = () => {
             <Button
               variant="text"
               color="primary"
-              onClick={() => fetchSubmissionList}
+              onClick={() => fetchSubmissionList(true)}
             >
               Last Updated: {submissionRefreshTime.toLocaleString()}
             </Button>
@@ -782,7 +773,7 @@ const DetailContest = () => {
             <Button
               variant="text"
               color="primary"
-              onClick={() => fetchClarifyList}
+              onClick={() => fetchClarifyList(true)}
             >
               Last Updated: {clarifyRefreshTime.toLocaleString()}
             </Button>
@@ -819,31 +810,81 @@ const DetailContest = () => {
                 </Button>
               )}
             </div>
-            {myInfo.registered && (
-              <div>
-                <h3>My Information</h3>
-                <div>Score: {myInfo.score}</div>
-                <div>Time Used: {displayRelativeTime(myInfo.total_time)}</div>
-                {myInfo.rank !== 0 && <div>Rank: {myInfo.rank}</div>}
-              </div>
-            )}
-            <div>
-              <h3>Contest Information</h3>
-              <div>Start Time: {contest.start_time}</div>
-              <div>Rank Invisible Time: {contest.block_time}</div>
-              <div>End Time: {contest.end_time}</div>
-              <div>Penalty Time: {displayRelativeTime(contest.penalty)}</div>
-            </div>
           </div>
         )}
+        {myInfo.registered && (
+          <div>
+            <h3>My Information</h3>
+            <div>Score: {myInfo.score}</div>
+            <div>Time Used: {displayRelativeTime(myInfo.total_time)}</div>
+            {myInfo.rank !== 0 && <div>Rank: {myInfo.rank}</div>}
+          </div>
+        )}
+        <div>
+          <h3>Contest Information</h3>
+          <div>Start Time: {contest.start_time}</div>
+          <div>Rank Invisible Time: {contest.block_time}</div>
+          <div>End Time: {contest.end_time}</div>
+          <div>Penalty Time: {displayRelativeTime(contest.penalty)}</div>
+        </div>
         {contest.status === 1 && (
           <div className={classes.refreshTimeContainer}>
-            <Button variant="text" color="primary" onClick={() => fetchMyInfo}>
+            <Button
+              variant="text"
+              color="primary"
+              onClick={() => fetchMyInfo(true)}
+            >
               Last Updated: {infoRefreshTime.toLocaleString()}
             </Button>
           </div>
         )}
       </>
+    );
+  };
+  const RemainTimeComponent = ({
+    contest,
+    scoreboardBlocked,
+    socketStatus,
+  }: IRemainTimeComponentProps) => {
+    const [remainTime, setRemainTime] = useState("");
+    const renderRemainTime = useCallback((endTime: string) => {
+      const now = new Date();
+      const endContest = new Date(endTime);
+
+      setRemainTime(
+        displayRelativeTime(((endContest.getTime() - now.getTime()) / 1000) | 0)
+      );
+    }, []);
+
+    useEffect(() => {
+      const handleRenderRemainTime = setInterval(() => {
+        renderRemainTime(contest.end_time);
+      }, 500);
+      return () => {
+        clearInterval(handleRenderRemainTime);
+      };
+    });
+
+    return (
+      <div className={classes.statusContainer}>
+        {contest.status === 1 && socketStatus && (
+          <div className={clsx(classes.socketOk, classes.statusContainer)}>
+            Remain Time: {remainTime}
+            {scoreboardBlocked && ", Ranklist hidden"}
+          </div>
+        )}
+        {contest.status === 1 && !socketStatus && (
+          <div className={clsx(classes.socketFail, classes.statusContainer)}>
+            WebSocket failed to connect, Remain Time: {remainTime}
+            {scoreboardBlocked && ", Ranklist hidden"}
+          </div>
+        )}
+        {contest.status === 3 && (
+          <div className={clsx(classes.contestOk, classes.statusContainer)}>
+            Contest ended, analysising...
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -862,25 +903,11 @@ const DetailContest = () => {
         {contest.name}
       </h1>
       {isLogin && (
-        <div className={classes.statusContainer}>
-          {contest.status === 1 && socketStatus && (
-            <div className={clsx(classes.socketOk, classes.statusContainer)}>
-              Remain Time: {remainTime}
-              {scoreboardBlocked && ", Ranklist hidden"}
-            </div>
-          )}
-          {contest.status === 1 && !socketStatus && (
-            <div className={clsx(classes.socketFail, classes.statusContainer)}>
-              WebSocket failed to connect, Remain Time: {remainTime}
-              {scoreboardBlocked && ", Ranklist hidden"}
-            </div>
-          )}
-          {contest.status === 3 && (
-            <div className={clsx(classes.contestOk, classes.statusContainer)}>
-              Contest ended, analysising...
-            </div>
-          )}
-        </div>
+        <RemainTimeComponent
+          contest={contest}
+          socketStatus={socketStatus}
+          scoreboardBlocked={scoreboardBlocked}
+        />
       )}
 
       <Paper className={classes.main}>
