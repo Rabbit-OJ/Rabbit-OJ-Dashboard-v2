@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useHistory, useParams } from "react-router";
 
 import Paper from "@material-ui/core/Paper";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
@@ -27,6 +27,7 @@ const SubmissionListView = () => {
   const { page } = useParams<{ page: string }>();
   const [pageCount, setPageCount] = useState(1);
   const [list, setList] = useState<SubmissionLite[]>([]);
+  const history = useHistory();
 
   const { isLogin, uid } = useTypedSelector((state) => ({
     isLogin: state.user.isLogin,
@@ -54,6 +55,13 @@ const SubmissionListView = () => {
     fetchList();
   }, [fetchList]);
 
+  const handleOnPageChange = useCallback(
+    (newPage: number) => {
+      history.push(`/list/submission/${newPage}`);
+    },
+    [history]
+  );
+
   const classes = useStyles();
   return (
     <>
@@ -63,6 +71,7 @@ const SubmissionListView = () => {
           list={list}
           page={+page}
           pageCount={pageCount}
+          onPageChange={handleOnPageChange}
         />
       </Paper>
     </>

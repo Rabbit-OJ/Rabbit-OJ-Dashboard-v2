@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 
 import Paper from "@material-ui/core/Paper";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
@@ -26,13 +26,13 @@ const ContestListView = () => {
   const { page } = useParams<{ page: string }>();
   const [pageCount, setPageCount] = useState(1);
   const [list, setList] = useState<Contest[]>([]);
+  const history = useHistory();
 
   const fetchList = useCallback(async () => {
     const { code, message } = await RabbitFetch<
       GeneralResponse<GeneralListResponse<Contest>>
     >(API_URL.CONTEST.GET_LIST(page));
 
-    console.log(message)
     if (code === 200) {
       setList(message.list);
       setPageCount(calculatePageCount(message.count));
@@ -45,12 +45,24 @@ const ContestListView = () => {
     fetchList();
   }, [fetchList]);
 
+  const handleOnPageChange = useCallback(
+    (newPage: number) => {
+      history.push(`/list/contest/${newPage}`);
+    },
+    [history]
+  );
+
   const classes = useStyles();
   return (
     <>
       <h1>Contest</h1>
       <Paper className={classes.main}>
-        <ContestListComponent list={list} page={+page} pageCount={pageCount} />
+        <ContestListComponent
+          list={list}
+          page={+page}
+          pageCount={pageCount}
+          onPageChange={handleOnPageChange}
+        />
       </Paper>
     </>
   );

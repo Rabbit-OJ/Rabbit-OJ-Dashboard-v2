@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useHistory, useParams } from "react-router";
 
 import Paper from "@material-ui/core/Paper";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
@@ -25,6 +25,7 @@ const ProblemListView = () => {
   const { page } = useParams<{ page: string }>();
   const [pageCount, setPageCount] = useState(1);
   const [list, setList] = useState<QuestionItem[]>([]);
+  const history = useHistory();
 
   const fetchList = useCallback(async () => {
     const { code, message } = await RabbitFetch<
@@ -42,13 +43,24 @@ const ProblemListView = () => {
   useEffect(() => {
     fetchList();
   }, [fetchList]);
+  const handleOnPageChange = useCallback(
+    (newPage: number) => {
+      history.push(`/list/problem/${newPage}`);
+    },
+    [history]
+  );
 
   const classes = useStyles();
   return (
     <>
       <h1>Problems</h1>
       <Paper className={classes.main}>
-        <ProblemListComponent list={list} page={+page} pageCount={pageCount} />
+        <ProblemListComponent
+          list={list}
+          page={+page}
+          pageCount={pageCount}
+          onPageChange={handleOnPageChange}
+        />
       </Paper>
     </>
   );

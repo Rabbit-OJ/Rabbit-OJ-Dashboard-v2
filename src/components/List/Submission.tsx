@@ -43,7 +43,7 @@ const useStyles = makeStyles(() =>
 
 const SubmissionComponent = ({ item }: ISubmissionComponentProps) => {
   const classes = useStyles();
-  const url = `/detail/submission/${item.tid}`;
+  const url = `/detail/submission/${item.sid}`;
 
   const statusClassName = [classes.statusSubmission];
   if (item.status === "ING") {
