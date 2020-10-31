@@ -60,18 +60,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Bar = () => {
-  const classes = useStyles();
-  const [navigationOpenState, setNavigationOpenState] = React.useState(false);
-  const history = useHistory();
-
-  const { isLogin, username, loadingCount } = useTypedSelector((state) => ({
-    isLogin: state.user.isLogin,
-    username: state.user.username,
+const LoadingElement = () => {
+  const dispatch = useDispatch();
+  const { loadingCount } = useTypedSelector((state) => ({
     loadingCount: state.loading.loadingCount,
   }));
-  const dispatch = useDispatch();
-  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     const loadingEvent = (arg: -1 | 1) => {
@@ -83,6 +76,31 @@ const Bar = () => {
     };
     loadingEmitter.addListener("data", loadingEvent);
 
+    return () => {
+      loadingEmitter.removeListener("data", loadingEvent);
+    };
+  }, [dispatch]);
+
+  return (
+    <LinearProgress
+      style={{ display: loadingCount > 0 ? undefined : "none" }}
+    />
+  );
+};
+
+const Bar = () => {
+  const classes = useStyles();
+  const [navigationOpenState, setNavigationOpenState] = React.useState(false);
+  const history = useHistory();
+
+  const { isLogin, username } = useTypedSelector((state) => ({
+    isLogin: state.user.isLogin,
+    username: state.user.username,
+  }));
+  const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
     const snackbarEvent = (
       message: SnackbarMessage,
       options?: OptionsObject
@@ -92,7 +110,6 @@ const Bar = () => {
     snackbarEmitter.addListener("data", snackbarEvent);
 
     return () => {
-      loadingEmitter.removeListener("data", loadingEvent);
       snackbarEmitter.removeListener("data", snackbarEvent);
     };
   }, [dispatch, enqueueSnackbar]);
@@ -133,6 +150,7 @@ const Bar = () => {
     );
 
     if (code === 200) {
+      localStorage.setItem("token", message.token);
       dispatch(login(message));
       emitSnackbar(`Welcome back, ${message.username}`, { variant: "info" });
     } else {
@@ -274,7 +292,7 @@ const Bar = () => {
           </Button>
         )}
       </Toolbar>
-      {loadingCount > 0 && <LinearProgress />}
+      <LoadingElement />
     </AppBar>
   );
 };

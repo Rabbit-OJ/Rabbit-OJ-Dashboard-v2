@@ -8,6 +8,7 @@ export interface RabbitFetchParams {
   headers?: { [key: string]: string };
   responseType?: ResponseType;
   suppressErrorMessage?: boolean;
+  suppressLoading?: boolean;
 }
 
 const RabbitFetch = async <T>(
@@ -17,7 +18,7 @@ const RabbitFetch = async <T>(
   const responseType: ResponseType = config.responseType ?? "json";
 
   try {
-    emitLoadingInc();
+    !config.suppressLoading && emitLoadingInc();
 
     const token = localStorage.getItem("token");
     let headers: { [key: string]: string } = config.headers ?? {};
@@ -44,7 +45,7 @@ const RabbitFetch = async <T>(
 
     throw err;
   } finally {
-    emitLoadingDec();
+    !config.suppressLoading && emitLoadingDec();
   }
 };
 

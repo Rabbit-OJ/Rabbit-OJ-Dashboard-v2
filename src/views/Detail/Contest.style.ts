@@ -1,6 +1,6 @@
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
-const useDetailContestStyles = makeStyles(() =>
+export const useDetailContestStyles = makeStyles(() =>
   createStyles({
     main: {
       margin: "24px 0",
@@ -82,13 +82,16 @@ const useDetailContestStyles = makeStyles(() =>
       display: "flex",
       flexGrow: 1,
       flexShrink: 1,
-      flexFlow: 'column',
+      flexFlow: "column",
     },
-    caseDotListContainer: {
-      display: "flex",
-      flexFlow: "row wrap",
-    }
   })
 );
 
-export default useDetailContestStyles;
+export const useSubmissionDotListComponentStyles = makeStyles(() =>
+  createStyles({
+    caseDotListContainer: {
+      display: "flex",
+      flexFlow: "row wrap",
+    },
+  })
+);

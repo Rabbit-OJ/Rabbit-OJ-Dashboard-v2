@@ -24,7 +24,10 @@ import { displayRelativeTime } from "../../utils/display";
 import DescriptionComponent from "../../components/Description";
 import SubmitComponent from "../../components/Submit";
 import SubmissionDotComponent from "../../components/Dot";
-import useDetailContestStyles from "./Contest.style";
+import {
+  useDetailContestStyles,
+  useSubmissionDotListComponentStyles,
+} from "./Contest.style";
 import {
   DEFAULT_CLARIFY_LIST,
   DEFAULT_CONTEST,
@@ -42,7 +45,11 @@ import {
   ContestQuestion,
   ContestQuestionItem,
 } from "../../model/contest-question";
-import { ContestSubmission, Submission } from "../../model/submission";
+import {
+  ContestSubmission,
+  JudgeResult,
+  Submission,
+} from "../../model/submission";
 import { ScoreBoardResponse } from "../../model/score-board";
 import { calculatePageCount } from "../../utils/page";
 import { ContestMyInfo } from "../../model/contest-my-info";
@@ -61,6 +68,48 @@ interface IRemainTimeComponentProps {
   socketStatus: boolean;
 }
 
+interface ICaseDotListContainer {
+  sid: number;
+}
+
+const SubmissionDotListComponent = ({ sid }: ICaseDotListContainer) => {
+  const [judge, setJudge] = useState<JudgeResult[]>([]);
+
+  const fetchJudgeInfo = useCallback(async () => {
+    const { code, message } = await RabbitFetch<GeneralResponse<Submission>>(
+      API_URL.SUBMISSION.GET_DETAIL(sid.toString()),
+      {
+        method: "GET",
+        suppressLoading: true, // todo
+      }
+    );
+    if (code === 200) {
+      setJudge(message.judge);
+    } else {
+      emitSnackbar(message, { variant: "error" });
+    }
+  }, [sid]);
+
+  useEffect(() => {
+    fetchJudgeInfo();
+  }, [fetchJudgeInfo]);
+
+  const classes = useSubmissionDotListComponentStyles();
+  return (
+    <>
+      <div className={classes.caseDotListContainer}>
+        {judge.map((caseItem, caseIdx) => (
+          <SubmissionDotComponent
+            key={caseIdx}
+            dot={caseItem}
+            index={caseIdx}
+          />
+        ))}
+      </div>
+    </>
+  );
+};
+
 const DetailContest = () => {
   const { cid } = useParams<{ cid: string }>();
 
@@ -71,9 +120,6 @@ const DetailContest = () => {
   const [clarifyList, setClarifyList] = useState(DEFAULT_CLARIFY_LIST);
   const [clarifyRead, setClarifyRead] = useState(0);
   const [submissionList, setSubmissionList] = useState(DEFAULT_SUBMISSION_LIST);
-  const [submissionCaseInfo, setSubmissionCaseInfo] = useState(
-    new Map<number, Submission>()
-  );
   const [problemList, setProblemList] = useState(DEFAULT_PROBLEM);
   const [scoreboardBlocked, setScoreboardBlocked] = useState(false);
   const [scoreboardPage, setScoreboardPage] = useState(1);
@@ -138,8 +184,11 @@ const DetailContest = () => {
           emitSnackbar(message, { variant: "error" });
         }
 
-        if (showNotice)
+        if (showNotice) {
           emitSnackbar("Personal info updated", { variant: "info" });
+        }
+
+        return message;
       } catch (e) {
         console.error(e);
       } finally {
@@ -304,7 +353,7 @@ const DetailContest = () => {
     };
   }, [isLogin, myInfo.registered, cid, uid]);
   const fetchSubmissionInfo = useCallback(
-    async (sid: number) => {
+    async (sid: number, notice: boolean = false) => {
       const { code, message } = await RabbitFetch<
         GeneralResponse<ContestSubmission>
       >(API_URL.CONTEST.GET_SUBMISSION_ONE(cid.toString(), sid.toString()), {
@@ -312,6 +361,20 @@ const DetailContest = () => {
       });
 
       if (code === 200) {
+        if (notice) {
+          const submissionStatus = message.status;
+          if (submissionStatus === 1) {
+            emitSnackbar(`Submission (#${sid}) for T${message.tid} Accepted!`, {
+              variant: "success",
+            });
+          } else if (submissionStatus === -1) {
+            emitSnackbar(
+              `Submission (#${sid}) for T${message.tid} Unaccepted!`,
+              { variant: "warning" }
+            );
+          }
+        }
+
         setSubmissionList((previousSubmissionList) => {
           const nextSubmissionList = previousSubmissionList.map((item) => {
             if (item.sid === sid) {
@@ -341,7 +404,7 @@ const DetailContest = () => {
       ws.onmessage = (e) => {
         const data = JSON.parse(e.data) as { ok: number };
         if (data.ok === 1) {
-          fetchSubmissionInfo(sid);
+          fetchSubmissionInfo(sid, true);
           ws.close();
         }
       };
@@ -357,50 +420,50 @@ const DetailContest = () => {
     [fetchSubmissionInfo]
   );
 
-  useEffect(() => {
-    const cleanFunctions: Array<() => any> = [];
-    fetchContestInfo().then((currentContest) => {
-      if (currentContest.status === 0 && isAdmin) {
-        fetchProblems();
-      }
-
-      if (currentContest.status > 0) {
-        fetchMyInfo();
-        fetchScoreBoard();
-        fetchClarifyList();
-        fetchProblems();
-        fetchSubmissionList();
-      }
-
-      if (currentContest.status === 1) {
-        if (myInfo.registered) {
-          connectContestSocket();
-          const handleFetchScheduledScoreboard = setInterval(() => {
-            fetchScoreBoard();
-          }, 10 * 60 * 1000);
-          cleanFunctions.push(() => {
-            clearInterval(handleFetchScheduledScoreboard);
-          });
+  useEffect(
+    () => {
+      const cleanFunctions: Array<() => any> = [];
+      fetchContestInfo().then((currentContest) => {
+        if (currentContest.status === 0 && isAdmin) {
+          fetchProblems();
         }
-      }
 
-      setScoreboardPageCount(currentContest.participants);
-    });
+        if (currentContest.status > 0) {
+          if (currentContest.status === 1) {
+            fetchMyInfo().then((myCurrentInfo) => {
+              if (myCurrentInfo?.registered) {
+                connectContestSocket();
 
-    return () => {
-      cleanFunctions.forEach((fn) => fn());
-    };
-  }, [
-    isAdmin,
-    fetchContestInfo,
-    fetchProblems,
-    fetchMyInfo,
-    fetchScoreBoard,
-    fetchClarifyList,
-    fetchSubmissionList,
-    connectContestSocket,
-    myInfo.registered,
-  ]);
+                // todo: order problem
+                const handleFetchScheduledScoreboard = setInterval(() => {
+                  fetchScoreBoard();
+                }, 10 * 60 * 1000);
+
+                cleanFunctions.push(() => {
+                  clearInterval(handleFetchScheduledScoreboard);
+                });
+              }
+            });
+          } else {
+            fetchMyInfo();
+          }
+          fetchScoreBoard();
+          fetchClarifyList();
+          fetchProblems();
+          fetchSubmissionList();
+        }
+
+        setScoreboardPageCount(currentContest.participants);
+      });
+
+      return () => {
+        cleanFunctions.forEach((fn) => fn());
+      };
+    },
+
+    // eslint-disable-next-line
+    [cid, isAdmin, isLogin]
+  );
   useEffect(() => {
     return () => {
       console.log("will dispose contest ws connection.");
@@ -432,7 +495,8 @@ const DetailContest = () => {
         emitSnackbar(message, { variant: "error" });
       }
     },
-    [cid, fetchMyInfo]
+    // eslint-disable-next-line
+    [cid]
   );
 
   const ScoreboardComponent = () => {
@@ -580,6 +644,7 @@ const DetailContest = () => {
           });
 
           if (stautsCode === 200) {
+            emitSnackbar(`T${tid} code submitted`, { variant: "info" });
             socketContestSubmissionInfo(message);
 
             const currentSubmissionItem: ContestSubmission<string> = {
@@ -596,8 +661,8 @@ const DetailContest = () => {
               created_at: new Date().toLocaleString(),
             };
             setSubmissionList((previousSubmissionList) => [
-              ...previousSubmissionList,
               currentSubmissionItem,
+              ...previousSubmissionList,
             ]);
           } else {
             emitSnackbar(`Submission failed: ${message}`, { variant: "error" });
@@ -619,7 +684,7 @@ const DetailContest = () => {
           <Accordion key={item.tid} TransitionProps={{ unmountOnExit: true }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography className={classes.heading}>
-                [T{(i + 1).toString()}] {item.subject}
+                [T{(item.id + 1).toString()}] {item.subject}
               </Typography>
               <Typography className={classes.secondaryHeading}>
                 🌟 {item.score}
@@ -663,32 +728,14 @@ const DetailContest = () => {
       </>
     );
   };
+
   const SubmissionsComponent = () => {
-    const handleExpanded = (sid: number) => async (
+    const [expanded, setExpanded] = React.useState(-1);
+    const handleChange = (panel: number) => (
       _: React.ChangeEvent<{}>,
-      expanded: boolean
+      isExpanded: boolean
     ) => {
-      if (!expanded) return;
-
-      if (
-        submissionCaseInfo.has(sid) &&
-        submissionCaseInfo.get(sid)!.status === "ING"
-      ) {
-        const { code, message } = await RabbitFetch<
-          GeneralResponse<Submission>
-        >(API_URL.SUBMISSION.GET_DETAIL(sid.toString()), {
-          method: "GET",
-        });
-
-        if (code === 200) {
-          setSubmissionCaseInfo((previousSubmissionCaseInfo) => {
-            previousSubmissionCaseInfo.set(sid, message);
-            return previousSubmissionCaseInfo;
-          });
-        } else {
-          emitSnackbar(message, { variant: "error" });
-        }
-      }
+      setExpanded(isExpanded ? panel : -1);
     };
 
     return (
@@ -697,11 +744,12 @@ const DetailContest = () => {
           <Accordion
             key={item.sid}
             TransitionProps={{ unmountOnExit: true }}
-            onChange={handleExpanded(item.sid)}
+            expanded={expanded === item.sid}
+            onChange={handleChange(item.sid)}
           >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography className={classes.heading}>
-                [T{(problemMap.get(item.tid)?.id ?? -1) + 1}]{" "}
+                [T{(problemMap.get(item.tid)?.id ?? 0) + 1}]{" "}
                 {problemMap.get(item.tid)?.subject ?? ""}
               </Typography>
               <Typography className={classes.secondaryHeading}>
@@ -723,19 +771,7 @@ const DetailContest = () => {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              {submissionCaseInfo.has(item.sid) && (
-                <div className={classes.caseDotListContainer}>
-                  {submissionCaseInfo
-                    .get(item.sid)!
-                    .judge.map((caseItem, caseIdx) => (
-                      <SubmissionDotComponent
-                        key={caseIdx}
-                        dot={caseItem}
-                        index={caseIdx}
-                      />
-                    ))}
-                </div>
-              )}
+              <SubmissionDotListComponent sid={item.sid} />
             </AccordionDetails>
           </Accordion>
         ))}
@@ -846,30 +882,32 @@ const DetailContest = () => {
     scoreboardBlocked,
     socketStatus,
   }: IRemainTimeComponentProps) => {
-    const [remainTime, setRemainTime] = useState("");
-    const renderRemainTime = useCallback((endTime: string) => {
+    const calcRemainTime = (endTime: string) => {
       const now = new Date();
       const endContest = new Date(endTime);
 
-      setRemainTime(
-        displayRelativeTime(((endContest.getTime() - now.getTime()) / 1000) | 0)
+      return displayRelativeTime(
+        ((endContest.getTime() - now.getTime()) / 1000) | 0
       );
-    }, []);
+    };
 
+    const [remainTime, setRemainTime] = useState(
+      calcRemainTime(contest.end_time)
+    );
     useEffect(() => {
       const handleRenderRemainTime = setInterval(() => {
-        renderRemainTime(contest.end_time);
+        setRemainTime(calcRemainTime(contest.end_time));
       }, 500);
       return () => {
         clearInterval(handleRenderRemainTime);
       };
-    });
+    }, [contest.end_time]);
 
     return (
       <div className={classes.statusContainer}>
         {contest.status === 1 && socketStatus && (
           <div className={clsx(classes.socketOk, classes.statusContainer)}>
-            Remain Time: {remainTime}
+            WebSocket online, Remain Time: {remainTime}
             {scoreboardBlocked && ", Ranklist hidden"}
           </div>
         )}
