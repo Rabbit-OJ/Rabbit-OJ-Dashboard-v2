@@ -433,15 +433,6 @@ const DetailContest = () => {
             fetchMyInfo().then((myCurrentInfo) => {
               if (myCurrentInfo?.registered) {
                 connectContestSocket();
-
-                // todo: order problem
-                const handleFetchScheduledScoreboard = setInterval(() => {
-                  fetchScoreBoard();
-                }, 10 * 60 * 1000);
-
-                cleanFunctions.push(() => {
-                  clearInterval(handleFetchScheduledScoreboard);
-                });
               }
             });
           } else {
@@ -500,6 +491,16 @@ const DetailContest = () => {
   );
 
   const ScoreboardComponent = () => {
+    useEffect(() => {
+      const handleFetchScheduledScoreboard = setInterval(() => {
+        fetchScoreBoard();
+      }, 10 * 60 * 1000);
+
+      return () => {
+        clearInterval(handleFetchScheduledScoreboard);
+      };
+    });
+
     const handleScoreboardPageChange = (
       _: React.ChangeEvent<unknown>,
       newPage: number
