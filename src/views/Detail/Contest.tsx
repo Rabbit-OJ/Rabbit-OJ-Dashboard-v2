@@ -521,7 +521,7 @@ const DetailContest = () => {
                   <TableCell align="center">Score</TableCell>
                   {problemList.map((item) => (
                     <TableCell key={item.id} align="center">
-                      T{item.id}
+                      T{item.id + 1}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -645,7 +645,7 @@ const DetailContest = () => {
           });
 
           if (stautsCode === 200) {
-            emitSnackbar(`T${tid} code submitted`, { variant: "info" });
+            emitSnackbar(`#${tid} code submitted, submission id: ${message}`, { variant: "info" });
             socketContestSubmissionInfo(message);
 
             const currentSubmissionItem: ContestSubmission<string> = {
