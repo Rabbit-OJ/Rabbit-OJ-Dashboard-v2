@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import { useParams } from "react-router-dom";
 import clsx from "clsx";
 
@@ -80,7 +86,6 @@ const SubmissionDotListComponent = ({ sid }: ICaseDotListContainer) => {
       API_URL.SUBMISSION.GET_DETAIL(sid.toString()),
       {
         method: "GET",
-        suppressLoading: true, // todo
       }
     );
     if (code === 200) {
@@ -508,110 +513,115 @@ const DetailContest = () => {
       setScoreboardPage(newPage);
     };
 
-    return (
-      <>
-        {!scoreboardBlocked && (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell component="th" align="center">
-                    Username
-                  </TableCell>
-                  <TableCell align="center">Score</TableCell>
-                  {problemList.map((item) => (
-                    <TableCell key={item.id} align="center">
-                      T{item.id + 1}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {scoreboardList.map((item) => (
-                  <TableRow key={item.uid}>
+    return useMemo(
+      () => (
+        <>
+          {!scoreboardBlocked && (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
                     <TableCell component="th" align="center">
-                      <div>#{item.rank}</div>
-                      <div>
-                        {item.rank === 1 && <span>🥇</span>}
-                        {item.rank === 2 && <span>🥈</span>}
-                        {item.rank === 3 && <span>🥉</span>} {item.username}
-                      </div>
+                      Username
                     </TableCell>
-                    <TableCell align="center">
-                      <div>{item.score}</div>
-                      <div>{displayRelativeTime(item.total_time)}</div>
-                    </TableCell>
-                    {problemList.map((_, i) => {
-                      const cellClassNames: string[] = [];
-                      if (
-                        item.progress[i].status === 1 &&
-                        item.progress[i].bug !== 0
-                      ) {
-                        cellClassNames.push(classes.acBlock);
-                      }
-                      if (
-                        item.progress[i].status === 1 &&
-                        item.progress[i].bug === 0
-                      ) {
-                        cellClassNames.push(classes.acNobugBlock);
-                      }
-                      if (
-                        item.progress[i].status === 0 &&
-                        item.progress[i].bug !== 0
-                      ) {
-                        cellClassNames.push(classes.waBlock);
-                      }
-
-                      return (
-                        <TableCell
-                          align="center"
-                          className={clsx(...cellClassNames)}
-                          key={i}
-                        >
-                          {item.progress[i].bug !== 0 && (
-                            <div>🐛{item.progress[i].bug}</div>
-                          )}
-                          {item.progress[i].status === 1 && (
-                            <div>
-                              {displayRelativeTime(item.progress[i].total_time)}
-                            </div>
-                          )}
-                        </TableCell>
-                      );
-                    })}
+                    <TableCell align="center">Score</TableCell>
+                    {problemList.map((item) => (
+                      <TableCell key={item.id} align="center">
+                        T{item.id + 1}
+                      </TableCell>
+                    ))}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {scoreboardPageCount >= 2 && (
-              <Pagination
-                className="pagination"
-                count={scoreboardPageCount}
-                page={scoreboardPage}
-                variant="outlined"
+                </TableHead>
+                <TableBody>
+                  {scoreboardList.map((item) => (
+                    <TableRow key={item.uid}>
+                      <TableCell component="th" align="center">
+                        <div>#{item.rank}</div>
+                        <div>
+                          {item.rank === 1 && <span>🥇</span>}
+                          {item.rank === 2 && <span>🥈</span>}
+                          {item.rank === 3 && <span>🥉</span>} {item.username}
+                        </div>
+                      </TableCell>
+                      <TableCell align="center">
+                        <div>{item.score}</div>
+                        <div>{displayRelativeTime(item.total_time)}</div>
+                      </TableCell>
+                      {problemList.map((_, i) => {
+                        const cellClassNames: string[] = [];
+                        if (
+                          item.progress[i].status === 1 &&
+                          item.progress[i].bug !== 0
+                        ) {
+                          cellClassNames.push(classes.acBlock);
+                        }
+                        if (
+                          item.progress[i].status === 1 &&
+                          item.progress[i].bug === 0
+                        ) {
+                          cellClassNames.push(classes.acNobugBlock);
+                        }
+                        if (
+                          item.progress[i].status === 0 &&
+                          item.progress[i].bug !== 0
+                        ) {
+                          cellClassNames.push(classes.waBlock);
+                        }
+
+                        return (
+                          <TableCell
+                            align="center"
+                            className={clsx(...cellClassNames)}
+                            key={i}
+                          >
+                            {item.progress[i].bug !== 0 && (
+                              <div>🐛{item.progress[i].bug}</div>
+                            )}
+                            {item.progress[i].status === 1 && (
+                              <div>
+                                {displayRelativeTime(
+                                  item.progress[i].total_time
+                                )}
+                              </div>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {scoreboardPageCount >= 2 && (
+                <Pagination
+                  className="pagination"
+                  count={scoreboardPageCount}
+                  page={scoreboardPage}
+                  variant="outlined"
+                  color="primary"
+                  onChange={handleScoreboardPageChange}
+                />
+              )}
+            </TableContainer>
+          )}
+          {scoreboardBlocked && (
+            <div className={classes.scoreBoardBlockedNotice}>
+              Invisible ranklist
+            </div>
+          )}
+          {contest.status === 1 && (
+            <div className={classes.refreshTimeContainer}>
+              <Button
+                variant="text"
                 color="primary"
-                onChange={handleScoreboardPageChange}
-              />
-            )}
-          </TableContainer>
-        )}
-        {scoreboardBlocked && (
-          <div className={classes.scoreBoardBlockedNotice}>
-            Invisible ranklist
-          </div>
-        )}
-        {contest.status === 1 && (
-          <div className={classes.refreshTimeContainer}>
-            <Button
-              variant="text"
-              color="primary"
-              onClick={() => fetchScoreBoard(true)}
-            >
-              Last Updated: {scoreboardRefreshTime.toLocaleString()}
-            </Button>
-          </div>
-        )}
-      </>
+                onClick={() => fetchScoreBoard(true)}
+              >
+                Last Updated: {scoreboardRefreshTime.toLocaleString()}
+              </Button>
+            </div>
+          )}
+        </>
+      ),
+      []
     );
   };
   const ProblemsComponent = () => {
@@ -645,7 +655,9 @@ const DetailContest = () => {
           });
 
           if (stautsCode === 200) {
-            emitSnackbar(`#${tid} code submitted, submission id: ${message}`, { variant: "info" });
+            emitSnackbar(`#${tid} code submitted, submission id: ${message}`, {
+              variant: "info",
+            });
             socketContestSubmissionInfo(message);
 
             const currentSubmissionItem: ContestSubmission<string> = {
@@ -679,54 +691,59 @@ const DetailContest = () => {
       },
       [submittingList]
     );
-    return (
-      <>
-        {problemList.map((item, i) => (
-          <Accordion key={item.tid} TransitionProps={{ unmountOnExit: true }}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography className={classes.heading}>
-                [T{(item.id + 1).toString()}] {item.subject}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
-                🌟 {item.score}
-                {myInfo && myInfo.progress[i] && myInfo.progress[i].bug > 0 && (
-                  <span className={classes.questionSubtitleTip}>
-                    🐛 {myInfo.progress[i].bug}
-                  </span>
-                )}
-                {myInfo &&
-                  myInfo.progress[i] &&
-                  myInfo.progress[i].status === 1 && (
-                    <span className={classes.questionSubtitleTip}>
-                      ✅ {displayRelativeTime(myInfo.progress[i].total_time)}
-                    </span>
-                  )}
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <div className={classes.problemDetailContainer}>
-                <DescriptionComponent question={item} isContest={true} />
-                <h3>Submit</h3>
-                <SubmitComponent
-                  tid={item.tid.toString()}
-                  onSubmit={handleSubmit(item.tid.toString())}
-                />
-              </div>
-            </AccordionDetails>
-          </Accordion>
-        ))}
-        {contest.status === 1 && (
-          <div className={classes.refreshTimeContainer}>
-            <Button
-              variant="text"
-              color="primary"
-              onClick={() => fetchProblems(true)}
-            >
-              Last Updated: {questionRefreshTime.toLocaleString()}
-            </Button>
-          </div>
-        )}
-      </>
+    return useMemo(
+      () => (
+        <>
+          {problemList.map((item, i) => (
+            <Accordion key={item.tid} TransitionProps={{ unmountOnExit: true }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography className={classes.heading}>
+                  [T{(item.id + 1).toString()}] {item.subject}
+                </Typography>
+                <Typography className={classes.secondaryHeading}>
+                  🌟 {item.score}
+                  {myInfo &&
+                    myInfo.progress[i] &&
+                    myInfo.progress[i].bug > 0 && (
+                      <span className={classes.questionSubtitleTip}>
+                        🐛 {myInfo.progress[i].bug}
+                      </span>
+                    )}
+                  {myInfo &&
+                    myInfo.progress[i] &&
+                    myInfo.progress[i].status === 1 && (
+                      <span className={classes.questionSubtitleTip}>
+                        ✅ {displayRelativeTime(myInfo.progress[i].total_time)}
+                      </span>
+                    )}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <div className={classes.problemDetailContainer}>
+                  <DescriptionComponent question={item} isContest={true} />
+                  <h3>Submit</h3>
+                  <SubmitComponent
+                    tid={item.tid.toString()}
+                    onSubmit={handleSubmit(item.tid.toString())}
+                  />
+                </div>
+              </AccordionDetails>
+            </Accordion>
+          ))}
+          {contest.status === 1 && (
+            <div className={classes.refreshTimeContainer}>
+              <Button
+                variant="text"
+                color="primary"
+                onClick={() => fetchProblems(true)}
+              >
+                Last Updated: {questionRefreshTime.toLocaleString()}
+              </Button>
+            </div>
+          )}
+        </>
+      ),
+      [handleSubmit]
     );
   };
 
@@ -739,143 +756,152 @@ const DetailContest = () => {
       setExpanded(isExpanded ? panel : -1);
     };
 
-    return (
-      <>
-        {submissionList.map((item) => (
-          <Accordion
-            key={item.sid}
-            TransitionProps={{ unmountOnExit: true }}
-            expanded={expanded === item.sid}
-            onChange={handleChange(item.sid)}
-          >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography className={classes.heading}>
-                [T{(problemMap.get(item.tid)?.id ?? 0) + 1}]{" "}
-                {problemMap.get(item.tid)?.subject ?? ""}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
-                {item.status === 1 && (
-                  <span className={classes.questionSubtitleTip}>
-                    ✅ {displayRelativeTime(item.total_time)}
-                  </span>
-                )}
-                {item.status === -1 && (
-                  <span className={classes.questionSubtitleTip}>
-                    🐛 {displayRelativeTime(item.total_time)}
-                  </span>
-                )}
-                {item.status === 0 && (
-                  <span className={classes.questionSubtitleTip}>
-                    ⌛️ {displayRelativeTime(item.total_time)}
-                  </span>
-                )}
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <SubmissionDotListComponent sid={item.sid} />
-            </AccordionDetails>
-          </Accordion>
-        ))}
-        {contest.status === 1 && (
-          <div className={classes.refreshTimeContainer}>
-            <Button
-              variant="text"
-              color="primary"
-              onClick={() => fetchSubmissionList(true)}
+    return useMemo(
+      () => (
+        <>
+          {submissionList.map((item) => (
+            <Accordion
+              key={item.sid}
+              TransitionProps={{ unmountOnExit: true }}
+              expanded={expanded === item.sid}
+              onChange={handleChange(item.sid)}
             >
-              Last Updated: {submissionRefreshTime.toLocaleString()}
-            </Button>
-          </div>
-        )}
-      </>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography className={classes.heading}>
+                  [T{(problemMap.get(item.tid)?.id ?? 0) + 1}]{" "}
+                  {problemMap.get(item.tid)?.subject ?? ""}
+                </Typography>
+                <Typography className={classes.secondaryHeading}>
+                  {item.status === 1 && (
+                    <span className={classes.questionSubtitleTip}>
+                      ✅ {displayRelativeTime(item.total_time)}
+                    </span>
+                  )}
+                  {item.status === -1 && (
+                    <span className={classes.questionSubtitleTip}>
+                      🐛 {displayRelativeTime(item.total_time)}
+                    </span>
+                  )}
+                  {item.status === 0 && (
+                    <span className={classes.questionSubtitleTip}>
+                      ⌛️ {displayRelativeTime(item.total_time)}
+                    </span>
+                  )}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <SubmissionDotListComponent sid={item.sid} />
+              </AccordionDetails>
+            </Accordion>
+          ))}
+          {contest.status === 1 && (
+            <div className={classes.refreshTimeContainer}>
+              <Button
+                variant="text"
+                color="primary"
+                onClick={() => fetchSubmissionList(true)}
+              >
+                Last Updated: {submissionRefreshTime.toLocaleString()}
+              </Button>
+            </div>
+          )}
+        </>
+      ),
+      [expanded]
     );
   };
   const ClarificationsComponent = () => {
-    return (
-      <>
-        {clarifyList.map((item) => (
-          <Accordion key={item.cid}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography className={classes.fullHeading}>
-                {item.created_at.toString()}
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography>{item.message}</Typography>
-            </AccordionDetails>
-          </Accordion>
-        ))}
-        {contest.status === 1 && (
-          <div className={classes.refreshTimeContainer}>
-            <Button
-              variant="text"
-              color="primary"
-              onClick={() => fetchClarifyList(true)}
-            >
-              Last Updated: {clarifyRefreshTime.toLocaleString()}
-            </Button>
-          </div>
-        )}
-      </>
+    return useMemo(
+      () => (
+        <>
+          {clarifyList.map((item) => (
+            <Accordion key={item.cid}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography className={classes.fullHeading}>
+                  {item.created_at.toString()}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography>{item.message}</Typography>
+              </AccordionDetails>
+            </Accordion>
+          ))}
+          {contest.status === 1 && (
+            <div className={classes.refreshTimeContainer}>
+              <Button
+                variant="text"
+                color="primary"
+                onClick={() => fetchClarifyList(true)}
+              >
+                Last Updated: {clarifyRefreshTime.toLocaleString()}
+              </Button>
+            </div>
+          )}
+        </>
+      ),
+      []
     );
   };
   const InformationComponent = () => {
-    return (
-      <>
-        {(contest.status === 0 || !myInfo.registered) && (
-          <div>
-            <h3>Operations</h3>
-            <div className={classes.btnContainer}>
-              {!myInfo.registered && (
-                <Button
-                  id="register"
-                  color="primary"
-                  variant="contained"
-                  onClick={handleRegister("reg")}
-                >
-                  Register
-                </Button>
-              )}
-              {contest.status === 0 && myInfo.registered && (
-                <Button
-                  id="unregister"
-                  color="secondary"
-                  variant="contained"
-                  onClick={handleRegister("cancel")}
-                >
-                  Unregister
-                </Button>
-              )}
+    return useMemo(
+      () => (
+        <>
+          {(contest.status === 0 || !myInfo.registered) && (
+            <div>
+              <h3>Operations</h3>
+              <div className={classes.btnContainer}>
+                {!myInfo.registered && (
+                  <Button
+                    id="register"
+                    color="primary"
+                    variant="contained"
+                    onClick={handleRegister("reg")}
+                  >
+                    Register
+                  </Button>
+                )}
+                {contest.status === 0 && myInfo.registered && (
+                  <Button
+                    id="unregister"
+                    color="secondary"
+                    variant="contained"
+                    onClick={handleRegister("cancel")}
+                  >
+                    Unregister
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-        {myInfo.registered && (
+          )}
+          {myInfo.registered && (
+            <div>
+              <h3>My Information</h3>
+              <div>Score: {myInfo.score}</div>
+              <div>Time Used: {displayRelativeTime(myInfo.total_time)}</div>
+              {myInfo.rank !== 0 && <div>Rank: {myInfo.rank}</div>}
+            </div>
+          )}
           <div>
-            <h3>My Information</h3>
-            <div>Score: {myInfo.score}</div>
-            <div>Time Used: {displayRelativeTime(myInfo.total_time)}</div>
-            {myInfo.rank !== 0 && <div>Rank: {myInfo.rank}</div>}
+            <h3>Contest Information</h3>
+            <div>Start Time: {contest.start_time}</div>
+            <div>Rank Invisible Time: {contest.block_time}</div>
+            <div>End Time: {contest.end_time}</div>
+            <div>Penalty Time: {displayRelativeTime(contest.penalty)}</div>
           </div>
-        )}
-        <div>
-          <h3>Contest Information</h3>
-          <div>Start Time: {contest.start_time}</div>
-          <div>Rank Invisible Time: {contest.block_time}</div>
-          <div>End Time: {contest.end_time}</div>
-          <div>Penalty Time: {displayRelativeTime(contest.penalty)}</div>
-        </div>
-        {contest.status === 1 && (
-          <div className={classes.refreshTimeContainer}>
-            <Button
-              variant="text"
-              color="primary"
-              onClick={() => fetchMyInfo(true)}
-            >
-              Last Updated: {infoRefreshTime.toLocaleString()}
-            </Button>
-          </div>
-        )}
-      </>
+          {contest.status === 1 && (
+            <div className={classes.refreshTimeContainer}>
+              <Button
+                variant="text"
+                color="primary"
+                onClick={() => fetchMyInfo(true)}
+              >
+                Last Updated: {infoRefreshTime.toLocaleString()}
+              </Button>
+            </div>
+          )}
+        </>
+      ),
+      []
     );
   };
   const RemainTimeComponent = ({
@@ -904,26 +930,29 @@ const DetailContest = () => {
       };
     }, [contest.end_time]);
 
-    return (
-      <div className={classes.statusContainer}>
-        {contest.status === 1 && socketStatus && (
-          <div className={clsx(classes.socketOk, classes.statusContainer)}>
-            WebSocket online, Remain Time: {remainTime}
-            {scoreboardBlocked && ", Ranklist hidden"}
-          </div>
-        )}
-        {contest.status === 1 && !socketStatus && (
-          <div className={clsx(classes.socketFail, classes.statusContainer)}>
-            WebSocket failed to connect, Remain Time: {remainTime}
-            {scoreboardBlocked && ", Ranklist hidden"}
-          </div>
-        )}
-        {contest.status === 3 && (
-          <div className={clsx(classes.contestOk, classes.statusContainer)}>
-            Contest ended, analysising...
-          </div>
-        )}
-      </div>
+    return useMemo(
+      () => (
+        <div className={classes.statusContainer}>
+          {contest.status === 1 && socketStatus && (
+            <div className={clsx(classes.socketOk, classes.statusContainer)}>
+              WebSocket online, Remain Time: {remainTime}
+              {scoreboardBlocked && ", Ranklist hidden"}
+            </div>
+          )}
+          {contest.status === 1 && !socketStatus && (
+            <div className={clsx(classes.socketFail, classes.statusContainer)}>
+              WebSocket failed to connect, Remain Time: {remainTime}
+              {scoreboardBlocked && ", Ranklist hidden"}
+            </div>
+          )}
+          {contest.status === 3 && (
+            <div className={clsx(classes.contestOk, classes.statusContainer)}>
+              Contest ended, analysising...
+            </div>
+          )}
+        </div>
+      ),
+      [remainTime, contest.status, socketStatus, scoreboardBlocked]
     );
   };
 
