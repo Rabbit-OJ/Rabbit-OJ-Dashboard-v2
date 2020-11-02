@@ -133,7 +133,7 @@ const DetailContest = () => {
   const [scoreboardRefreshTime, setScoreboardRefreshTime] = useState(
     new Date()
   );
-  const [questionRefreshTime, setQuestionRefreshTime] = useState(new Date());
+  const [problemRefreshTime, setProblemRefreshTime] = useState(new Date());
   const [submissionRefreshTime, setSubmissionRefreshTime] = useState(
     new Date()
   );
@@ -294,7 +294,7 @@ const DetailContest = () => {
       } catch (e) {
         console.error(e);
       } finally {
-        setQuestionRefreshTime(new Date());
+        setProblemRefreshTime(new Date());
       }
     },
     [cid, isLogin]
@@ -737,7 +737,7 @@ const DetailContest = () => {
                 color="primary"
                 onClick={() => fetchProblems(true)}
               >
-                Last Updated: {questionRefreshTime.toLocaleString()}
+                Last Updated: {problemRefreshTime.toLocaleString()}
               </Button>
             </div>
           )}
@@ -748,7 +748,8 @@ const DetailContest = () => {
   };
 
   const SubmissionsComponent = () => {
-    const [expanded, setExpanded] = React.useState(-1);
+    const [expanded, setExpanded] = useState(-1);
+
     const handleChange = (panel: number) => (
       _: React.ChangeEvent<{}>,
       isExpanded: boolean
@@ -756,58 +757,55 @@ const DetailContest = () => {
       setExpanded(isExpanded ? panel : -1);
     };
 
-    return useMemo(
-      () => (
-        <>
-          {submissionList.map((item) => (
-            <Accordion
-              key={item.sid}
-              TransitionProps={{ unmountOnExit: true }}
-              expanded={expanded === item.sid}
-              onChange={handleChange(item.sid)}
+    return (
+      <>
+        {submissionList.map((item) => (
+          <Accordion
+            key={item.sid}
+            TransitionProps={{ unmountOnExit: true }}
+            expanded={expanded === item.sid}
+            onChange={handleChange(item.sid)}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography className={classes.heading}>
+                [T{(problemMap.get(item.tid)?.id ?? 0) + 1}]{" "}
+                {problemMap.get(item.tid)?.subject ?? ""}
+              </Typography>
+              <Typography className={classes.secondaryHeading}>
+                {item.status === 1 && (
+                  <span className={classes.questionSubtitleTip}>
+                    ✅ {displayRelativeTime(item.total_time)}
+                  </span>
+                )}
+                {item.status === -1 && (
+                  <span className={classes.questionSubtitleTip}>
+                    🐛 {displayRelativeTime(item.total_time)}
+                  </span>
+                )}
+                {item.status === 0 && (
+                  <span className={classes.questionSubtitleTip}>
+                    ⌛️ {displayRelativeTime(item.total_time)}
+                  </span>
+                )}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <SubmissionDotListComponent sid={item.sid} />
+            </AccordionDetails>
+          </Accordion>
+        ))}
+        {contest.status === 1 && (
+          <div className={classes.refreshTimeContainer}>
+            <Button
+              variant="text"
+              color="primary"
+              onClick={() => fetchSubmissionList(true)}
             >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography className={classes.heading}>
-                  [T{(problemMap.get(item.tid)?.id ?? 0) + 1}]{" "}
-                  {problemMap.get(item.tid)?.subject ?? ""}
-                </Typography>
-                <Typography className={classes.secondaryHeading}>
-                  {item.status === 1 && (
-                    <span className={classes.questionSubtitleTip}>
-                      ✅ {displayRelativeTime(item.total_time)}
-                    </span>
-                  )}
-                  {item.status === -1 && (
-                    <span className={classes.questionSubtitleTip}>
-                      🐛 {displayRelativeTime(item.total_time)}
-                    </span>
-                  )}
-                  {item.status === 0 && (
-                    <span className={classes.questionSubtitleTip}>
-                      ⌛️ {displayRelativeTime(item.total_time)}
-                    </span>
-                  )}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <SubmissionDotListComponent sid={item.sid} />
-              </AccordionDetails>
-            </Accordion>
-          ))}
-          {contest.status === 1 && (
-            <div className={classes.refreshTimeContainer}>
-              <Button
-                variant="text"
-                color="primary"
-                onClick={() => fetchSubmissionList(true)}
-              >
-                Last Updated: {submissionRefreshTime.toLocaleString()}
-              </Button>
-            </div>
-          )}
-        </>
-      ),
-      [expanded]
+              Last Updated: {submissionRefreshTime.toLocaleString()}
+            </Button>
+          </div>
+        )}
+      </>
     );
   };
   const ClarificationsComponent = () => {
@@ -962,6 +960,22 @@ const DetailContest = () => {
     </Badge>
   );
 
+  const SubmissionsListComponentMemo = useMemo(
+    () => {
+      return () => <SubmissionsComponent />;
+    },
+    // eslint-disable-next-line
+    [submissionList, submissionRefreshTime, problemMap]
+  );
+
+  const ProblemsComponentMemo = useMemo(
+    () => {
+      return () => <ProblemsComponent />;
+    },
+    // eslint-disable-next-line
+    [problemMap, problemRefreshTime]
+  );
+
   return (
     <>
       <h1>
@@ -994,8 +1008,8 @@ const DetailContest = () => {
         </Tabs>
         <div className={classes.bodyContainer}>
           {tabIndex === 0 && <ScoreboardComponent />}
-          {tabIndex === 1 && <ProblemsComponent />}
-          {tabIndex === 2 && <SubmissionsComponent />}
+          {tabIndex === 1 && <ProblemsComponentMemo />}
+          {tabIndex === 2 && <SubmissionsListComponentMemo />}
           {tabIndex === 3 && <ClarificationsComponent />}
           {tabIndex === 4 && <InformationComponent />}
         </div>
