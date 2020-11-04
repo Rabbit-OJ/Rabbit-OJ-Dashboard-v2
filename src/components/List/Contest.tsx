@@ -29,11 +29,11 @@ const useStyles = makeStyles(() =>
 
 const renderStatus = (status: 0 | 1 | 2 | 3) => {
   if (status === 0) {
-    return "未开始";
+    return "Coming";
   } else if (status === 1) {
-    return "进行中";
+    return "Doing";
   } else {
-    return "已结束";
+    return "Finished";
   }
 };
 
