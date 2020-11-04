@@ -1,9 +1,20 @@
+import "katex/dist/katex.min.css";
+
 import React from "react";
+import ReactMarkdown from "react-markdown";
+import math from "remark-math";
 
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
 import { QuestionDetail } from "../../model/question-detail";
 import { ContestQuestion } from "../../model/contest-question";
+
+const { InlineMath, BlockMath } = require("@tutorege/react-katex");
+
+const renderers: any = {
+  inlineMath: ({ value }: any) => <InlineMath math={value} />,
+  math: ({ value }: any) => <BlockMath math={value} />,
+};
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -35,7 +46,13 @@ const DescriptionComponent = ({ question, isContest }: IProps) => {
   return (
     <>
       <h3>Description</h3>
-      <div id="description">{question.content}</div>
+      <div id="description">
+        <ReactMarkdown
+          plugins={[math]}
+          children={question.content}
+          renderers={renderers}
+        />
+      </div>
       <h3>Sample</h3>
       {question.sample.map((item, idx) => (
         <div className={classes.sample} key={idx}>
